@@ -1302,10 +1302,9 @@ function renderScene() {
   html += `<div class="choices-title" style="color:${t.choicesColor}; font-family:${t.titleFont};">What do you do?</div>`;
   const letters = ['A','B','C','D'];
   scene.choices.forEach((choice, ci) => {
-    const nextKey = choice.next ? JSON.stringify(choice.next) : 'null';
     html += `<button class="choice-btn" style="background:${t.btnBg};color:${t.btnColor};"
       onmouseover="this.style.background='${t.btnHover}'" onmouseout="this.style.background='${t.btnBg}'"
-      onclick="handleChoice(${JSON.stringify(choice)})">
+      onclick="handleChoice(${ci})">
       <span class="choice-letter">${letters[ci]}.</span>${choice.text}
     </button>`;
   });
@@ -1324,9 +1323,13 @@ function toggleDef(id) {
   if (el) el.classList.toggle('show');
 }
 
-function handleChoice(choice) {
+function handleChoice(ci) {
+  const story = STORIES[selectedGenre];
+  const scene = story.scenes[currentSceneKey];
+  const choice = scene.choices[ci];
+  if (!choice) return;
   if (choice.restart) {
-    currentSceneKey = STORIES[selectedGenre].start || 'intro';
+    currentSceneKey = story.start || 'intro';
     renderScene();
     return;
   }
