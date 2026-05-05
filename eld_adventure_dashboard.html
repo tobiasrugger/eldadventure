@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Adventures — Teacher Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f0ede6; font-family: 'Nunito', sans-serif; min-height: 100vh; }
+
+/* LOGIN */
+.overlay { position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;display:flex;align-items:center;justify-content:center; }
+.login-box { background:#fff;border-radius:16px;padding:32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2); }
+.login-box h2 { font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:4px; }
+.login-box p { color:#888;font-size:0.9rem;margin-bottom:20px; }
+.login-box input { width:100%;padding:12px 14px;border-radius:10px;border:2px solid #ddd;font-family:'Nunito',sans-serif;font-size:1rem;outline:none;margin-bottom:12px;transition:border-color 0.15s; }
+.login-box input:focus { border-color:#1a1a1a; }
+.login-box button { width:100%;padding:13px;border-radius:10px;border:none;background:#1a1a1a;color:#FFD600;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;cursor:pointer; }
+.login-box button:hover { background:#333; }
+.login-err { color:#c04040;font-size:0.85rem;margin-top:8px;display:none; }
+
+/* HEADER */
+header { background:#1a1a1a;color:#FFD600;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px; }
+header h1 { font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px; }
+header .hdr-sub { font-size:0.8rem;opacity:0.6;letter-spacing:1px;text-transform:uppercase;margin-top:2px; }
+.hdr-right { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+.refresh-btn { background:#FFD600;color:#1a1a1a;border:none;border-radius:8px;padding:8px 16px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;transition:all 0.15s; }
+.refresh-btn:hover { background:#ffe033; }
+.logout-btn { background:transparent;color:#FFD600;border:1.5px solid #FFD600;border-radius:8px;padding:7px 14px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s; }
+.logout-btn:hover { background:rgba(255,214,0,0.1); }
+
+/* MAIN */
+main { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+/* STAT CARDS */
+.stats-row { display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem; }
+.stat-card { background:#fff;border-radius:12px;padding:1rem 1.25rem;border:1.5px solid #e0ddd6; }
+.stat-label { font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:6px; }
+.stat-value { font-size:28px;font-weight:800;color:#1a1a1a; }
+.stat-sub { font-size:12px;color:#aaa;margin-top:2px; }
+
+/* FILTERS */
+.filters { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center; }
+.filter-label { font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888; }
+.filter-btn { padding:5px 14px;border-radius:20px;border:1.5px solid #ccc;background:#fff;font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;cursor:pointer;color:#555;transition:all 0.15s; }
+.filter-btn:hover { border-color:#888; }
+.filter-btn.active { background:#1a1a1a;color:#FFD600;border-color:#1a1a1a; }
+.search-box { padding:6px 14px;border-radius:20px;border:1.5px solid #ccc;font-family:'Nunito',sans-serif;font-size:13px;outline:none;min-width:180px;transition:border-color 0.15s; }
+.search-box:focus { border-color:#1a1a1a; }
+
+/* TABLE */
+.table-wrap { background:#fff;border-radius:12px;border:1.5px solid #e0ddd6;overflow:hidden;margin-bottom:1.5rem; }
+table { width:100%;border-collapse:collapse; }
+thead { background:#1a1a1a; }
+thead th { color:#FFD600;font-family:'Bangers',cursive;font-size:14px;letter-spacing:1.5px;padding:12px 16px;text-align:left;white-space:nowrap; }
+tbody tr { border-bottom:1px solid #f0ede6;transition:background 0.1s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:#faf9f6; }
+tbody td { padding:11px 16px;font-size:14px;color:#333; }
+.badge { display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700; }
+.badge-hero { background:#fff8e1;color:#7a3800;border:1px solid #ffd166; }
+.badge-everyday { background:#e8f4fd;color:#1a4a6e;border:1px solid #b3d9f5; }
+.badge-scary { background:#1a1a2e;color:#c8b8ff;border:1px solid #3d2d6e; }
+.badge-crush { background:#fff0f5;color:#8b1a4a;border:1px solid #f4c0d1; }
+.badge-mystery { background:#1c1a14;color:#d4c87a;border:1px solid #3d3820; }
+.score-pill { display:inline-block;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:800; }
+.score-hi { background:#e8f5e8;color:#2a7a2a; }
+.score-mid { background:#fff8e1;color:#7a5800; }
+.score-lo { background:#fde8e8;color:#8b2020; }
+.lang-tag { font-size:12px;color:#888;font-weight:600; }
+.time-tag { font-size:12px;color:#bbb; }
+.empty-state { text-align:center;padding:3rem;color:#aaa; }
+.empty-state .e-icon { font-size:40px;margin-bottom:8px; }
+
+/* LOADING */
+#loading { text-align:center;padding:3rem;color:#aaa;font-weight:600;letter-spacing:1px;font-size:14px;text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="overlay" id="overlay">
+  <div class="login-box">
+    <h2>Story Adventures</h2>
+    <p>Teacher Dashboard</p>
+    <input type="password" id="pw-input" placeholder="Password"
+      onkeydown="if(event.key==='Enter')checkPw()">
+    <button onclick="checkPw()">ENTER →</button>
+    <div class="login-err" id="pw-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div>
+    <h1>⚡ Story Adventures</h1>
+    <div class="hdr-sub">Teacher Dashboard</div>
+  </div>
+  <div class="hdr-right">
+    <span id="last-updated" style="font-size:12px;opacity:0.5;"></span>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <button class="logout-btn" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total submissions</div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg score</div>
+      <div class="stat-value" id="stat-avg">—</div>
+      <div class="stat-sub">out of 6</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Most popular genre</div>
+      <div class="stat-value" id="stat-genre" style="font-size:18px;padding-top:4px;">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Scored 5–6 / 6</div>
+      <div class="stat-value" id="stat-hi">—</div>
+      <div class="stat-sub">students</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <span class="filter-label">Genre:</span>
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('Everyday life',this)">Everyday</button>
+    <button class="filter-btn" onclick="setFilter('Scary & strange',this)">Scary</button>
+    <button class="filter-btn" onclick="setFilter('Crush & friendship',this)">Crush</button>
+    <button class="filter-btn" onclick="setFilter('Mystery',this)">Mystery</button>
+    <button class="filter-btn" onclick="setFilter('Superhero',this)">Superhero</button>
+    <input class="search-box" id="search-box" placeholder="Search by name…" oninput="renderTable()">
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div id="loading">Loading results…</div>
+    <table id="results-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Language</th>
+          <th>Genre</th>
+          <th>Score</th>
+          <th>%</th>
+          <th>Completed</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <div class="e-icon">📭</div>
+      <div>No results found.</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const SUPA_URL = 'https://lhmwtfyceilgndpygivj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxobXd0ZnljZWlsZ25kcHlnaXZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzk5MDIsImV4cCI6MjA5MTcxNTkwMn0.0uIXyctHMfTN4doWYn2JJ260swD5b-t0T-oDMSIPtBU';
+const PASSWORD = 'galileo2026';
+
+let allRows = [];
+let activeFilter = 'all';
+
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === PASSWORD) {
+    document.getElementById('overlay').style.display = 'none';
+    loadData();
+  } else {
+    document.getElementById('pw-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function logout() {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-err').style.display = 'none';
+}
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results-table').style.display = 'none';
+  document.getElementById('empty-state').style.display = 'none';
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/eld_adventure_results?select=*&order=completed_at.desc&limit=500`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    allRows = await res.json();
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    updateStats();
+    renderTable();
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Error loading data. Check Supabase table.';
+  }
+}
+
+function updateStats() {
+  const n = allRows.length;
+  document.getElementById('stat-total').textContent = n;
+  if (n === 0) { document.getElementById('stat-avg').textContent = '—'; return; }
+  const avg = allRows.reduce((s,r) => s + r.score, 0) / n;
+  document.getElementById('stat-avg').textContent = avg.toFixed(1);
+  const hi = allRows.filter(r => r.score >= 5).length;
+  document.getElementById('stat-hi').textContent = hi;
+  const counts = {};
+  allRows.forEach(r => counts[r.genre] = (counts[r.genre]||0)+1);
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stat-genre').textContent = top ? top[0] : '—';
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function genreBadge(genre) {
+  const map = {
+    'Superhero': 'hero', 'Everyday life': 'everyday',
+    'Scary & strange': 'scary', 'Crush & friendship': 'crush', 'Mystery': 'mystery'
+  };
+  const cls = map[genre] || 'everyday';
+  return `<span class="badge badge-${cls}">${genre}</span>`;
+}
+
+function scorePill(score, total) {
+  const pct = score / total;
+  const cls = pct >= 0.8 ? 'score-hi' : pct >= 0.6 ? 'score-mid' : 'score-lo';
+  return `<span class="score-pill ${cls}">${score} / ${total}</span>`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) +
+    ' <span class="time-tag">' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }) + '</span>';
+}
+
+function renderTable() {
+  const search = document.getElementById('search-box').value.toLowerCase();
+  const rows = allRows.filter(r => {
+    const matchGenre = activeFilter === 'all' || r.genre === activeFilter;
+    const name = ((r.first_name||'') + ' ' + (r.last_name||'')).toLowerCase();
+    const matchSearch = !search || name.includes(search);
+    return matchGenre && matchSearch;
+  });
+
+  document.getElementById('loading').style.display = 'none';
+
+  if (rows.length === 0) {
+    document.getElementById('results-table').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('results-table').style.display = 'table';
+  document.getElementById('empty-state').style.display = 'none';
+
+  document.getElementById('table-body').innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.last_name || ''}, ${r.first_name || ''}</strong></td>
+      <td><span class="lang-tag">${r.language || '—'}</span></td>
+      <td>${genreBadge(r.genre)}</td>
+      <td>${scorePill(r.score, r.total)}</td>
+      <td>${r.pct !== null ? r.pct + '%' : '—'}</td>
+      <td>${fmtDate(r.completed_at)}</td>
+    </tr>
+  `).join('');
+}
+
+// focus password field on load
+window.onload = () => document.getElementById('pw-input').focus();
+</script>
+</body>
+</html>

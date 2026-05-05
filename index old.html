@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Adventures — ELD Text Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700&family=Creepster&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;1,400&family=Rajdhani:wght@400;600;700&family=Satisfy&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif; }
+
+/* ── GENRE SELECTOR ── */
+#genre-selector { max-width: 700px; margin: 0 auto; padding: 2rem 1rem; }
+.selector-title { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+.selector-h1 { font-size: 32px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.selector-sub { font-size: 16px; color: #555; margin-bottom: 2rem; }
+.lang-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; align-items: center; }
+.lang-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #888; margin-right: 4px; }
+.lang-btn { padding: 5px 14px; border-radius: 20px; border: 1.5px solid #ccc; background: white; font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600; cursor: pointer; color: #333; transition: all 0.15s; }
+.lang-btn:hover { border-color: #888; }
+.lang-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+.genre-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 2rem; }
+.genre-card {
+  border-radius: 12px; padding: 1.4rem 1.2rem; cursor: pointer;
+  border: 2.5px solid transparent; transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.genre-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.genre-card.selected { border-width: 3px; }
+.genre-card .g-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+.genre-card .g-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.genre-card .g-sub { font-size: 13px; opacity: 0.8; line-height: 1.4; }
+
+.g-everyday { background: #e8f4fd; border-color: #b3d9f5; color: #1a4a6e; }
+.g-everyday.selected { border-color: #1a7fc1; box-shadow: 0 0 0 3px rgba(26,127,193,0.15); }
+.g-scary { background: #1a1a2e; color: #c8b8ff; border-color: #3d2d6e; }
+.g-scary.selected { border-color: #9b72ff; box-shadow: 0 0 0 3px rgba(155,114,255,0.2); }
+.g-scary .g-sub { color: #9b8fd4; }
+.g-crush { background: #fff0f5; color: #8b1a4a; border-color: #f4c0d1; }
+.g-crush.selected { border-color: #e05080; box-shadow: 0 0 0 3px rgba(224,80,128,0.15); }
+.g-mystery { background: #1c1a14; color: #d4c87a; border-color: #3d3820; }
+.g-mystery.selected { border-color: #c8b840; box-shadow: 0 0 0 3px rgba(200,184,64,0.2); }
+.g-mystery .g-sub { color: #a89e5a; }
+.g-hero { background: #fff8e1; color: #7a3800; border-color: #ffd166; }
+.g-hero.selected { border-color: #ff9900; box-shadow: 0 0 0 3px rgba(255,153,0,0.2); }
+
+.start-btn {
+  display: block; width: 100%; max-width: 300px;
+  padding: 14px 32px; font-size: 17px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  border-radius: 8px; border: none;
+  background: #1a1a1a; color: white; cursor: pointer;
+  transition: all 0.15s; opacity: 0.35; pointer-events: none;
+}
+.start-btn.active { opacity: 1; pointer-events: all; }
+.start-btn.active:hover { background: #333; transform: translateY(-1px); }
+
+/* ── GAME SCREEN ── */
+#game-screen { display: none; max-width: 680px; margin: 0 auto; padding: 1rem; }
+
+.back-btn {
+  background: none; border: 1.5px solid #ccc; border-radius: 6px;
+  padding: 6px 14px; font-size: 13px; font-family: 'Nunito', sans-serif;
+  font-weight: 600; cursor: pointer; color: #555; margin-bottom: 1rem;
+  transition: all 0.15s;
+}
+.back-btn:hover { border-color: #888; color: #222; }
+
+.lang-indicator {
+  display: inline-block; background: #1a1a1a; color: white;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* Story panel */
+.story-panel {
+  border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+  animation: fadeUp 0.3s ease;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.scene-header { padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.scene-art { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 60px; position: relative; }
+.scene-caption { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 16px 0; opacity: 0.6; }
+.scene-body { padding: 12px 16px 18px; font-size: 16px; line-height: 1.7; }
+
+/* sentence translation */
+.story-sentence { cursor: pointer; border-bottom: 1px dotted transparent; transition: border-color 0.15s; display: inline; }
+.story-sentence:hover { border-bottom-color: rgba(0,0,0,0.3); }
+.sentence-trans { display: none; font-size: 14px; font-style: italic; opacity: 0.75; margin: 2px 0 4px 8px; padding: 3px 8px; border-left: 3px solid; border-radius: 0 4px 4px 0; line-height: 1.5; }
+.sentence-trans.show { display: block; }
+
+/* word tooltips */
+.vocab-word { border-bottom: 2px dotted; cursor: pointer; font-weight: 700; }
+.word-popup { display: none; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 4px; margin: 0 2px; }
+.word-popup.show { display: inline-block; }
+
+/* vocab bar */
+.vocab-bar { border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.vocab-bar-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.6; }
+.vocab-chip { display: inline-block; border-radius: 4px; padding: 3px 10px; margin: 3px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid transparent; }
+.vocab-def-row { font-size: 13px; margin-top: 4px; display: none; line-height: 1.5; padding: 4px 8px; border-radius: 4px; }
+.vocab-def-row.show { display: block; }
+
+/* choices */
+.choices-wrap { border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; animation: fadeUp 0.3s 0.1s both; }
+.choices-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; opacity: 0.7; }
+.choice-btn {
+  display: block; width: 100%; padding: 12px 16px; margin-bottom: 8px;
+  border-radius: 7px; border: none; font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 700; text-align: left; cursor: pointer;
+  transition: all 0.15s; line-height: 1.4;
+}
+.choice-btn:last-child { margin-bottom: 0; }
+.choice-letter { font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-right: 8px; opacity: 0.6; }
+
+.progress-bar { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; text-align: right; margin-bottom: 8px; }
+
+/* ── QUIZ SCREEN ── */
+#quiz-screen { display: none; max-width: 640px; margin: 0 auto; padding: 1rem; }
+.quiz-panel { border-radius: 10px; padding: 1.5rem; margin-bottom: 14px; animation: fadeUp 0.3s ease; }
+.quiz-q-num { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; opacity: 0.6; }
+.quiz-q-text { font-size: 17px; font-weight: 600; line-height: 1.5; margin-bottom: 14px; }
+.quiz-opt {
+  display: block; width: 100%; padding: 11px 16px; margin-bottom: 8px;
+  border-radius: 7px; border: 2px solid; font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
+  transition: all 0.15s; background: transparent;
+}
+.quiz-opt:hover { transform: translateX(3px); }
+.quiz-opt.correct { }
+.quiz-opt.wrong { }
+.quiz-feedback { font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 6px; margin-top: 8px; display: none; }
+.quiz-feedback.show { display: block; }
+.quiz-next { padding: 10px 28px; border-radius: 7px; border: none; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; display: none; transition: all 0.15s; }
+.quiz-next.show { display: block; }
+.quiz-next:hover { transform: translateY(-1px); }
+
+/* results */
+#results-screen { display: none; max-width: 500px; margin: 0 auto; padding: 2rem 1rem; text-align: center; }
+.results-icon { font-size: 64px; margin-bottom: 12px; }
+.results-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+.results-sub { font-size: 16px; color: #555; margin-bottom: 1.5rem; }
+.results-score { font-size: 48px; font-weight: 700; margin-bottom: 4px; }
+.results-score-label { font-size: 14px; color: #888; margin-bottom: 1.5rem; }
+.results-play-again { padding: 12px 32px; border-radius: 8px; border: none; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; background: #1a1a1a; color: white; transition: all 0.15s; }
+.results-play-again:hover { background: #333; }
+</style>
+</head>
+<body>
+
+<!-- GENRE SELECTOR -->
+<div id="genre-selector">
+  <p class="selector-title">ELD Classroom</p>
+  <h1 class="selector-h1">Story Adventures</h1>
+  <p class="selector-sub">Choose your language and your story.</p>
+
+  <div class="lang-bar">
+    <span class="lang-label">🌐 Language:</span>
+    <button class="lang-btn active" onclick="setLang('en')" data-lang="en">English only</button>
+    <button class="lang-btn" onclick="setLang('es')" data-lang="es">Español</button>
+    <button class="lang-btn" onclick="setLang('ar')" data-lang="ar">العربية</button>
+    <button class="lang-btn" onclick="setLang('zh')" data-lang="zh">中文</button>
+    <button class="lang-btn" onclick="setLang('vi')" data-lang="vi">Tiếng Việt</button>
+    <button class="lang-btn" onclick="setLang('ur')" data-lang="ur">اردو</button>
+    <button class="lang-btn" onclick="setLang('ru')" data-lang="ru">Русский</button>
+  </div>
+
+  <div class="genre-grid">
+    <div class="genre-card g-everyday" onclick="selectGenre('everyday', this)">
+      <span class="g-icon">🏫</span>
+      <div class="g-title">Everyday life</div>
+      <div class="g-sub">Friends, school, and real problems</div>
+    </div>
+    <div class="genre-card g-scary" onclick="selectGenre('scary', this)">
+      <span class="g-icon">👻</span>
+      <div class="g-title">Scary &amp; strange</div>
+      <div class="g-sub">Horror, sci-fi, and the unknown</div>
+    </div>
+    <div class="genre-card g-crush" onclick="selectGenre('crush', this)">
+      <span class="g-icon">💌</span>
+      <div class="g-title">Crush &amp; friendship</div>
+      <div class="g-sub">Notes, dances, and big feelings</div>
+    </div>
+    <div class="genre-card g-mystery" onclick="selectGenre('mystery', this)">
+      <span class="g-icon">🔍</span>
+      <div class="g-title">Mystery</div>
+      <div class="g-sub">Solve a crime at school</div>
+    </div>
+    <div class="genre-card g-hero" onclick="selectGenre('hero', this)">
+      <span class="g-icon">⚡</span>
+      <div class="g-title">Superhero</div>
+      <div class="g-sub">Powers, danger, and saving the day</div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="startBtn" onclick="startGame()">Start story →</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <button class="back-btn" onclick="goHome()">← Choose a different story</button>
+  <div id="lang-indicator" class="lang-indicator" style="display:none"></div>
+  <div id="progress-bar" class="progress-bar"></div>
+  <div id="story-container"></div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quiz-screen">
+  <div id="quiz-container"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen">
+  <div class="results-icon" id="results-icon">🏆</div>
+  <div class="results-title" id="results-title">Great job!</div>
+  <div class="results-sub" id="results-sub">You finished the story and the quiz.</div>
+  <div class="results-score" id="results-score">8/10</div>
+  <div class="results-score-label">correct answers</div>
+  <button class="results-play-again" onclick="goHome()">Play again</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════
+const TRANS = {
+  es: {
+    // everyday
+    "My name is Sam.": "Me llamo Sam.",
+    "I am a student at Lincoln High School.": "Soy estudiante en Lincoln High School.",
+    "Today is the first day of school.": "Hoy es el primer día de clases.",
+    "I am nervous.": "Estoy nervioso/a.",
+    "I don't know anyone here.": "No conozco a nadie aquí.",
+    "I sit down at an empty table in the cafeteria.": "Me siento en una mesa vacía en la cafetería.",
+    "Then a girl sits next to me.": "Luego una chica se sienta a mi lado.",
+    "Her name is Priya.": "Su nombre es Priya.",
+    "She smiles at me.": "Ella me sonríe.",
+    "\"Hi,\" she says. \"Is this seat taken?\"": "\"Hola\", dice. \"¿Está ocupado este asiento?\"",
+    "I feel a little better.": "Me siento un poco mejor.",
+    "Priya tells me about the school.": "Priya me habla sobre la escuela.",
+    "She says the math teacher is strict but fair.": "Dice que el maestro de matemáticas es estricto pero justo.",
+    "She says the library is the best place to study.": "Dice que la biblioteca es el mejor lugar para estudiar.",
+    "\"Don't eat the pizza,\" she whispers. \"It's terrible.\"": "\"No comas la pizza\", susurra. \"Es terrible.\"",
+    "I laugh. My first laugh at this school.": "Me río. Mi primera risa en esta escuela.",
+    "After lunch, I have English class.": "Después del almuerzo, tengo clase de inglés.",
+    "The teacher asks everyone to say their name and one interesting thing about themselves.": "La maestra pide a todos que digan su nombre y algo interesante sobre ellos.",
+    "I am scared. My English is not perfect.": "Tengo miedo. Mi inglés no es perfecto.",
+    "But Priya looks at me and nods. \"You can do it,\" her eyes say.": "Pero Priya me mira y asiente. \"Tú puedes\", dicen sus ojos.",
+    "I stand up. \"My name is Sam,\" I say. \"I like basketball and cooking.\"": "Me levanto. \"Me llamo Sam\", digo. \"Me gusta el baloncesto y cocinar.\"",
+    "Everyone claps. The teacher smiles.": "Todos aplauden. La maestra sonríe.",
+    "Maybe this school is not so bad.": "Quizás esta escuela no sea tan mala.",
+    "At the end of the day, Priya finds me.": "Al final del día, Priya me encuentra.",
+    "\"Same time tomorrow?\" she asks.": "\"¿A la misma hora mañana?\", pregunta.",
+    "I smile. \"Yes. Same time tomorrow.\"": "Sonrío. \"Sí. A la misma hora mañana.\"",
+    "I walk home feeling something new. Something like hope.": "Camino a casa sintiendo algo nuevo. Algo parecido a la esperanza.",
+    // scary
+    "My name is Jordan.": "Me llamo Jordan.",
+    "It is late at night.": "Es tarde en la noche.",
+    "I am studying alone in the school library.": "Estoy estudiando solo/a en la biblioteca de la escuela.",
+    "Everyone else went home hours ago.": "Todos los demás se fueron hace horas.",
+    "The lights flicker.": "Las luces parpadean.",
+    "I hear a sound — like footsteps — in the hallway.": "Escucho un sonido — como pasos — en el pasillo.",
+    "\"Hello?\" I call out.": "\"¿Hola?\" llamo.",
+    "No answer.": "Sin respuesta.",
+    "I close my book and listen.": "Cierro mi libro y escucho.",
+    "The footsteps get closer.": "Los pasos se acercan.",
+    "I stand up slowly.": "Me levanto despacio.",
+    "The door opens. But no one is there.": "La puerta se abre. Pero no hay nadie.",
+    "I back away toward the window.": "Retrocedo hacia la ventana.",
+    "Then I see it — a shadow on the wall. Moving.": "Luego lo veo — una sombra en la pared. Moviéndose.",
+    "\"Who are you?\" I whisper.": "\"¿Quién eres?\" susurro.",
+    "The shadow speaks. \"I am the student who sat in your seat. Thirty years ago.\"": "La sombra habla. \"Soy el estudiante que se sentaba en tu lugar. Hace treinta años.\"",
+    "I cannot move. I cannot scream.": "No puedo moverme. No puedo gritar.",
+    "\"I just want you to know,\" the shadow says, \"...the test on Friday is very hard.\"": "\"Solo quiero que sepas\", dice la sombra, \"...el examen del viernes es muy difícil.\"",
+    "I blink. \"...What?\"": "Parpadeo. \"...¿Qué?\"",
+    "The shadow laughs — a strange, echoing laugh.": "La sombra ríe — una risa extraña y que hace eco.",
+    "\"Study chapter seven. I failed because of chapter seven.\"": "\"Estudia el capítulo siete. Yo reprobé por el capítulo siete.\"",
+    "Then the shadow disappears.": "Luego la sombra desaparece.",
+    "I look at my textbook. Chapter seven. I open it.": "Miro mi libro de texto. Capítulo siete. Lo abro.",
+    "Maybe the strangest things can help you.": "Quizás las cosas más extrañas pueden ayudarte.",
+    // crush
+    "My name is Casey.": "Me llamo Casey.",
+    "There is someone in my history class.": "Hay alguien en mi clase de historia.",
+    "Their name is River.": "Su nombre es River.",
+    "River has kind eyes and always laughs at the teacher's bad jokes.": "River tiene ojos amables y siempre se ríe de los malos chistes del maestro.",
+    "I want to talk to River, but I don't know what to say.": "Quiero hablar con River, pero no sé qué decir.",
+    "My friend Bex says, \"Just say hi.\"": "Mi amiga Bex dice: \"Solo di hola.\"",
+    "That sounds easy. But my heart beats very fast when River is near.": "Suena fácil. Pero mi corazón late muy rápido cuando River está cerca.",
+    "One day, River drops a book.": "Un día, River deja caer un libro.",
+    "I pick it up. Our hands touch for one second.": "Lo recojo. Nuestras manos se tocan por un segundo.",
+    "\"Thank you,\" River says, and smiles at me.": "\"Gracias\", dice River, y me sonríe.",
+    "I feel my face get warm.": "Siento que mi cara se pone caliente.",
+    "\"You're welcome,\" I say. My voice is very quiet.": "\"De nada\", digo. Mi voz es muy baja.",
+    "That night, I write River a note.": "Esa noche, le escribo una nota a River.",
+    "\"I like talking to you. Would you want to study together sometime?\"": "\"Me gusta hablar contigo. ¿Querrías estudiar juntos alguna vez?\"",
+    "I don't know if I should give it.": "No sé si debo dársela.",
+    "The next day, I see River eating lunch alone.": "Al día siguiente, veo a River comiendo solo/a.",
+    "This is my chance.": "Esta es mi oportunidad.",
+    "I walk over. I sit down. I put the note on the table.": "Me acerco. Me siento. Pongo la nota sobre la mesa.",
+    "River reads it slowly. Then looks up at me.": "River la lee lentamente. Luego me mira.",
+    "\"I would really like that,\" River says.": "\"Me gustaría mucho\", dice River.",
+    "I smile so wide it hurts.": "Sonrío tan ampliamente que duele.",
+    "Bex was right. Sometimes you just have to say hi.": "Bex tenía razón. A veces solo tienes que decir hola.",
+    // mystery
+    "My name is Detective Dana.": "Me llamo Detective Dana.",
+    "Well — I am a student. But I want to be a detective someday.": "Bueno — soy estudiante. Pero quiero ser detective algún día.",
+    "Today, something strange happened at school.": "Hoy, algo extraño pasó en la escuela.",
+    "The school trophy is missing.": "El trofeo de la escuela ha desaparecido.",
+    "It was on the shelf in the main office this morning.": "Estaba en el estante de la oficina principal esta mañana.",
+    "Now it is gone.": "Ahora ha desaparecido.",
+    "I have three suspects.": "Tengo tres sospechosos.",
+    "First, Marcus — the star athlete who lost a big game last week.": "Primero, Marcus — el atleta estrella que perdió un gran partido la semana pasada.",
+    "Second, Ms. Chen — the art teacher whose classroom is next to the office.": "Segundo, la Sra. Chen — la maestra de arte cuyo salón está al lado de la oficina.",
+    "Third, a new student who no one knows yet.": "Tercero, un estudiante nuevo que nadie conoce todavía.",
+    "I start with Marcus.": "Empiezo con Marcus.",
+    "\"Where were you this morning?\" I ask.": "\"¿Dónde estabas esta mañana?\", pregunto.",
+    "\"In the gym,\" he says. \"Coach can tell you.\"": "\"En el gimnasio\", dice. \"El entrenador puede confirmarlo.\"",
+    "He looks sad, not guilty.": "Parece triste, no culpable.",
+    "Next I find the new student — their name is Lee.": "Luego encuentro al estudiante nuevo — su nombre es Lee.",
+    "Lee is sitting alone, reading a book about famous crimes.": "Lee está sentado/a solo/a, leyendo un libro sobre crímenes famosos.",
+    "\"Did you take the trophy?\" I ask directly.": "\"¿Tomaste el trofeo?\", pregunto directamente.",
+    "Lee looks surprised. \"No! I just got here. I don't even know what trophy.\"": "Lee parece sorprendido/a. \"¡No! Acabo de llegar. Ni siquiera sé de qué trofeo hablas.\"",
+    "I believe Lee.": "Le creo a Lee.",
+    "That leaves Ms. Chen.": "Eso deja a la Sra. Chen.",
+    "I walk to the art room. I knock on the open door.": "Camino al salón de arte. Llamo a la puerta abierta.",
+    "Ms. Chen is painting. And on her desk — behind her coffee cup — I see it.": "La Sra. Chen está pintando. Y en su escritorio — detrás de su taza de café — lo veo.",
+    "The trophy.": "El trofeo.",
+    "\"Ms. Chen,\" I say calmly. \"Why is the school trophy on your desk?\"": "\"Sra. Chen\", digo con calma. \"¿Por qué está el trofeo de la escuela en su escritorio?\"",
+    "She turns red. \"I — I was painting it. As a surprise. It was getting rusty.\"": "Se pone roja. \"Yo — lo estaba pintando. Como sorpresa. Se estaba oxidando.\"",
+    "I look at the trophy. It is clean and bright. Freshly painted.": "Miro el trofeo. Está limpio y brillante. Recién pintado.",
+    "\"Next time,\" I say, \"tell someone first.\"": "\"La próxima vez\", digo, \"avisa a alguien primero.\"",
+    "She nods. Mystery solved.": "Ella asiente. Misterio resuelto.",
+    // hero
+    "My name is Alex.": "Me llamo Alex.",
+    "I am a student at Westview High School.": "Soy estudiante en Westview High School.",
+    "Yesterday, something strange happened.": "Ayer, algo extraño ocurrió.",
+    "I was walking home when lightning hit a tree near me.": "Caminaba a casa cuando un rayo golpeó un árbol cerca de mí.",
+    "I fell down.": "Me caí.",
+    "Now, this morning, I can feel something different.": "Ahora, esta mañana, puedo sentir algo diferente.",
+    "When I picked up my backpack, it floated off the ground.": "Cuando recogí mi mochila, flotó del suelo.",
+    "I have a superpower.": "Tengo un superpoder.",
+    "I find my friend Marco in the hallway.": "Encuentro a mi amigo Marco en el pasillo.",
+    "I show him. I lift my hand and a pencil rises into the air.": "Se lo muestro. Levanto la mano y un lápiz sube por el aire.",
+    "His eyes get very big.": "Sus ojos se hacen muy grandes.",
+    "\"Alex!\" he whispers. \"That is amazing. But — be careful.\"": "\"¡Alex!\" susurra. \"Eso es increíble. Pero — ten cuidado.\"",
+    "Then we hear a loud noise from outside.": "Luego escuchamos un ruido fuerte afuera.",
+    "Through the window, I see something terrifying.": "A través de la ventana, veo algo aterrador.",
+    "A big robot is walking down the street.": "Un gran robot camina por la calle.",
+    "It is enormous. Bigger than a bus.": "Es enorme. Más grande que un autobús.",
+    "Students are running. Teachers are shouting.": "Los estudiantes corren. Los maestros gritan.",
+    "I stand in front of the robot. My hands are trembling.": "Me paro frente al robot. Mis manos tiemblan.",
+    "I close my eyes. I concentrate.": "Cierro los ojos. Me concentro.",
+    "I feel the power move through my body.": "Siento el poder moverse por mi cuerpo.",
+    "And I push.": "Y empujo.",
+    "The robot flies backward. It hits the street. It does not move again.": "El robot vuela hacia atrás. Golpea la calle. Ya no se mueve.",
+    "The school is safe.": "La escuela está a salvo.",
+    "One week later, I am back in English class.": "Una semana después, estoy de regreso en la clase de inglés.",
+    "The teacher says: \"A hero is someone who uses power to help other people.\"": "La maestra dice: \"Un héroe es alguien que usa el poder para ayudar a otras personas.\"",
+    "I smile. My name is Alex. And I am a superhero.": "Sonrío. Me llamo Alex. Y soy un superhéroe."
+  },
+  ar: {
+    "My name is Sam.": "اسمي سام.",
+    "I am a student at Lincoln High School.": "أنا طالب في مدرسة لينكولن الثانوية.",
+    "Today is the first day of school.": "اليوم هو أول يوم في المدرسة.",
+    "I am nervous.": "أنا متوتر.",
+    "I don't know anyone here.": "لا أعرف أحداً هنا.",
+    "I sit down at an empty table in the cafeteria.": "جلست على طاولة فارغة في الكافيتيريا.",
+    "Then a girl sits next to me.": "ثم جلست فتاة بجانبي.",
+    "Her name is Priya.": "اسمها بريا.",
+    "She smiles at me.": "ابتسمت لي.",
+    "My name is Alex.": "اسمي أليكس.",
+    "I am a student at Westview High School.": "أنا طالب في مدرسة ويستفيو الثانوية.",
+    "Yesterday, something strange happened.": "بالأمس، حدث شيء غريب.",
+    "I was walking home when lightning hit a tree near me.": "كنت أمشي إلى المنزل عندما ضرب البرق شجرة بالقرب مني.",
+    "I fell down.": "سقطت على الأرض.",
+    "I have a superpower.": "لدي قوة خارقة.",
+    "The school is safe.": "المدرسة آمنة.",
+    "My name is Jordan.": "اسمي جوردان.",
+    "It is late at night.": "الوقت متأخر في الليل.",
+    "I am studying alone in the school library.": "أنا أدرس وحيداً في مكتبة المدرسة.",
+    "My name is Casey.": "اسمي كيسي.",
+    "My name is Detective Dana.": "اسمي المحقق دانا.",
+    "The school trophy is missing.": "كأس المدرسة مفقود.",
+    "Mystery solved.": "تم حل اللغز."
+  },
+  zh: {
+    "My name is Sam.": "我叫山姆。",
+    "I am a student at Lincoln High School.": "我是林肯高中的学生。",
+    "Today is the first day of school.": "今天是开学第一天。",
+    "I am nervous.": "我很紧张。",
+    "I don't know anyone here.": "我在这里不认识任何人。",
+    "I sit down at an empty table in the cafeteria.": "我坐在自助餐厅一张空桌子旁。",
+    "Then a girl sits next to me.": "然后一个女孩坐在我旁边。",
+    "Her name is Priya.": "她叫普里亚。",
+    "My name is Alex.": "我叫亚历克斯。",
+    "I am a student at Westview High School.": "我是西景高中的学生。",
+    "Yesterday, something strange happened.": "昨天，发生了一件奇怪的事。",
+    "I was walking home when lightning hit a tree near me.": "我走路回家时，闪电击中了我附近的一棵树。",
+    "I have a superpower.": "我有超能力。",
+    "The school is safe.": "学校安全了。",
+    "My name is Jordan.": "我叫乔丹。",
+    "It is late at night.": "现在是深夜。",
+    "My name is Casey.": "我叫凯西。",
+    "My name is Detective Dana.": "我叫侦探达娜。",
+    "The school trophy is missing.": "学校的奖杯不见了。",
+    "Mystery solved.": "谜题解开了。"
+  },
+  vi: {
+    "My name is Sam.": "Tên tôi là Sam.",
+    "I am a student at Lincoln High School.": "Tôi là học sinh trường Trung học Lincoln.",
+    "Today is the first day of school.": "Hôm nay là ngày đầu tiên đi học.",
+    "I am nervous.": "Tôi đang lo lắng.",
+    "I don't know anyone here.": "Tôi không quen ai ở đây.",
+    "I sit down at an empty table in the cafeteria.": "Tôi ngồi vào một bàn trống trong căng-tin.",
+    "My name is Alex.": "Tên tôi là Alex.",
+    "I am a student at Westview High School.": "Tôi là học sinh trường Trung học Westview.",
+    "Yesterday, something strange happened.": "Hôm qua, điều gì đó kỳ lạ đã xảy ra.",
+    "I have a superpower.": "Tôi có siêu năng lực.",
+    "The school is safe.": "Trường học an toàn rồi.",
+    "My name is Jordan.": "Tên tôi là Jordan.",
+    "It is late at night.": "Trời đã khuya.",
+    "My name is Casey.": "Tên tôi là Casey.",
+    "My name is Detective Dana.": "Tên tôi là Thám tử Dana.",
+    "The school trophy is missing.": "Cúp của trường bị mất.",
+    "Mystery solved.": "Bí ẩn đã được giải."
+  },
+  ur: {
+    "My name is Sam.": "میرا نام سام ہے۔",
+    "I am a student at Lincoln High School.": "میں لنکن ہائی اسکول کا طالب علم ہوں۔",
+    "Today is the first day of school.": "آج اسکول کا پہلا دن ہے۔",
+    "I am nervous.": "میں گھبرایا ہوا ہوں۔",
+    "I don't know anyone here.": "میں یہاں کسی کو نہیں جانتا۔",
+    "My name is Alex.": "میرا نام ایلکس ہے۔",
+    "I am a student at Westview High School.": "میں ویسٹ ویو ہائی اسکول کا طالب علم ہوں۔",
+    "Yesterday, something strange happened.": "کل کچھ عجیب ہوا۔",
+    "I have a superpower.": "میرے پاس ایک خاص طاقت ہے۔",
+    "The school is safe.": "اسکول محفوظ ہے۔",
+    "My name is Jordan.": "میرا نام جورڈن ہے۔",
+    "My name is Casey.": "میرا نام کیسی ہے۔",
+    "My name is Detective Dana.": "میرا نام ڈیٹیکٹو دانا ہے۔",
+    "The school trophy is missing.": "اسکول کی ٹرافی غائب ہے۔",
+    "Mystery solved.": "معمہ حل ہو گیا۔"
+  },
+  ru: {
+    "My name is Sam.": "Меня зовут Сэм.",
+    "I am a student at Lincoln High School.": "Я ученик школы Линкольн.",
+    "Today is the first day of school.": "Сегодня первый день в школе.",
+    "I am nervous.": "Я нервничаю.",
+    "I don't know anyone here.": "Я здесь никого не знаю.",
+    "I sit down at an empty table in the cafeteria.": "Я сажусь за пустой стол в столовой.",
+    "Then a girl sits next to me.": "Потом рядом со мной садится девушка.",
+    "Her name is Priya.": "Её зовут Прия.",
+    "My name is Alex.": "Меня зовут Алекс.",
+    "I am a student at Westview High School.": "Я ученик школы Вестью.",
+    "Yesterday, something strange happened.": "Вчера произошло кое-что странное.",
+    "I have a superpower.": "У меня есть суперспособность.",
+    "The school is safe.": "Школа в безопасности.",
+    "My name is Jordan.": "Меня зовут Джордан.",
+    "It is late at night.": "Глубокая ночь.",
+    "My name is Casey.": "Меня зовут Кейси.",
+    "My name is Detective Dana.": "Меня зовут детектив Дана.",
+    "The school trophy is missing.": "Школьный кубок пропал.",
+    "Mystery solved.": "Тайна раскрыта."
+  }
+};
+
+// ═══════════════════════════════════════════
+// GENRE THEMES
+// ═══════════════════════════════════════════
+const THEMES = {
+  everyday: {
+    panelBg: '#e8f4fd', headerBg: '#1a4a6e', headerColor: '#7ec8f0',
+    artBg: '#b3d9f5', captionColor: '#1a4a6e', bodyColor: '#0d2d45',
+    vocabBg: '#d0eaf8', vocabChipBg: '#1a7fc1', vocabChipColor: '#fff',
+    vocabDefBg: '#c0e0f5', wordColor: '#1a5a8e',
+    choicesBg: '#1a7fc1', choicesColor: '#e8f4fd', btnBg: '#0d4a7a', btnColor: '#e8f4fd', btnHover: '#1a5a8e',
+    quizBg: '#e8f4fd', quizBorder: '#1a7fc1', quizColor: '#0d2d45',
+    correctBg: '#c8efc8', correctColor: '#1a5a1a', wrongBg: '#fce8e8', wrongColor: '#8b1a1a',
+    nextBg: '#1a4a6e', nextColor: '#fff',
+    font: "'Nunito', sans-serif", titleFont: "'Nunito', sans-serif"
+  },
+  scary: {
+    panelBg: '#1a1a2e', headerBg: '#0d0d1a', headerColor: '#9b72ff',
+    artBg: '#0d0d1a', captionColor: '#6b52b8', bodyColor: '#c8b8ff',
+    vocabBg: '#0d0d1a', vocabChipBg: '#3d2d6e', vocabChipColor: '#c8b8ff',
+    vocabDefBg: '#16162a', wordColor: '#9b72ff',
+    choicesBg: '#0d0d1a', choicesColor: '#9b72ff', btnBg: '#3d2d6e', btnColor: '#c8b8ff', btnHover: '#4d3d7e',
+    quizBg: '#1a1a2e', quizBorder: '#9b72ff', quizColor: '#c8b8ff',
+    correctBg: '#1a3a1a', correctColor: '#7ec87e', wrongBg: '#3a1a1a', wrongColor: '#f07070',
+    nextBg: '#3d2d6e', nextColor: '#c8b8ff',
+    font: "'Nunito', sans-serif", titleFont: "'Creepster', cursive"
+  },
+  crush: {
+    panelBg: '#fff0f5', headerBg: '#8b1a4a', headerColor: '#ffc0d8',
+    artBg: '#f4c0d1', captionColor: '#8b1a4a', bodyColor: '#4a0a28',
+    vocabBg: '#fce0ec', vocabChipBg: '#e05080', vocabChipColor: '#fff',
+    vocabDefBg: '#fad0e4', wordColor: '#c03060',
+    choicesBg: '#f4c0d1', choicesColor: '#4a0a28', btnBg: '#8b1a4a', btnColor: '#ffc0d8', btnHover: '#a02a5a',
+    quizBg: '#fff0f5', quizBorder: '#e05080', quizColor: '#4a0a28',
+    correctBg: '#c8f0c8', correctColor: '#1a5a1a', wrongBg: '#fce8e8', wrongColor: '#8b1a1a',
+    nextBg: '#8b1a4a', nextColor: '#fff',
+    font: "'Lora', serif", titleFont: "'Satisfy', cursive"
+  },
+  mystery: {
+    panelBg: '#1c1a14', headerBg: '#0e0d08', headerColor: '#c8b840',
+    artBg: '#0e0d08', captionColor: '#7a6e20', bodyColor: '#d4c87a',
+    vocabBg: '#141208', vocabChipBg: '#3d3820', vocabChipColor: '#d4c87a',
+    vocabDefBg: '#1c1a10', wordColor: '#c8b840',
+    choicesBg: '#0e0d08', choicesColor: '#c8b840', btnBg: '#2a2810', btnColor: '#d4c87a', btnHover: '#3a3818',
+    quizBg: '#1c1a14', quizBorder: '#c8b840', quizColor: '#d4c87a',
+    correctBg: '#142814', correctColor: '#7ec87e', wrongBg: '#281414', wrongColor: '#f07070',
+    nextBg: '#3d3820', nextColor: '#d4c87a',
+    font: "'Playfair Display', serif", titleFont: "'Playfair Display', serif"
+  },
+  hero: {
+    panelBg: '#fffbe6', headerBg: '#1a1a1a', headerColor: '#FFD600',
+    artBg: '#1a1a1a', captionColor: '#7a5800', bodyColor: '#2a1a00',
+    vocabBg: '#fff3c0', vocabChipBg: '#1a1a1a', vocabChipColor: '#FFD600',
+    vocabDefBg: '#ffe890', wordColor: '#b85c00',
+    choicesBg: '#FFD600', choicesColor: '#1a1a1a', btnBg: '#1a1a1a', btnColor: '#FFD600', btnHover: '#333',
+    quizBg: '#fffbe6', quizBorder: '#FFD600', quizColor: '#2a1a00',
+    correctBg: '#c8efc8', correctColor: '#1a5a1a', wrongBg: '#fce8e8', wrongColor: '#8b1a1a',
+    nextBg: '#1a1a1a', nextColor: '#FFD600',
+    font: "'Nunito', sans-serif", titleFont: "'Bangers', cursive"
+  }
+};
+
+// ═══════════════════════════════════════════
+// STORIES  (sentences split for translation)
+// ═══════════════════════════════════════════
+const STORIES = {
+
+everyday: {
+  label: "Everyday life",
+  scenes: [
+    {
+      art: "🏫😰", caption: "Lincoln High School — first day",
+      sentences: [
+        "My name is Sam.",
+        "I am a student at Lincoln High School.",
+        "Today is the first day of school.",
+        "I am nervous.",
+        "I don't know anyone here."
+      ],
+      vocab: { nervous: { en: "feeling worried and scared", es: "nervioso — sentirse preocupado", ar: "قلق — خائف", zh: "紧张 — 担心害怕", vi: "lo lắng — cảm thấy sợ", ur: "گھبرایا — پریشان", ru: "нервный — беспокойный" } },
+      choices: ["Go to the cafeteria and sit alone", "Walk around and try to find someone friendly"]
+    },
+    {
+      art: "🍽️👧", caption: "The cafeteria",
+      sentences: [
+        "I sit down at an empty table in the cafeteria.",
+        "Then a girl sits next to me.",
+        "Her name is Priya.",
+        "She smiles at me.",
+        "\"Hi,\" she says. \"Is this seat taken?\""
+      ],
+      vocab: { cafeteria: { en: "the school lunch room", es: "la cafetería — comedor de la escuela", ar: "الكافيتيريا — غرفة الغداء", zh: "自助餐厅 — 学校食堂", vi: "căng-tin — phòng ăn trường", ur: "کیفے ٹیریا — اسکول کا ڈائننگ روم", ru: "столовая — школьная столовая" } },
+      choices: ["Say \"Hi\" and introduce yourself", "Just nod and look at your phone"]
+    },
+    {
+      art: "😊💬", caption: "Talking with Priya",
+      sentences: [
+        "I feel a little better.",
+        "Priya tells me about the school.",
+        "She says the math teacher is strict but fair.",
+        "She says the library is the best place to study.",
+        "\"Don't eat the pizza,\" she whispers. \"It's terrible.\""
+      ],
+      vocab: { strict: { en: "having firm rules; serious", es: "estricto — que tiene reglas firmes", ar: "صارم — لديه قواعد صارمة", zh: "严格 — 规则严厉", vi: "nghiêm khắc — có quy tắc chặt chẽ", ur: "سخت — مضبوط اصولوں والا", ru: "строгий — со строгими правилами" } },
+      choices: ["Ask Priya to show you the library", "Go to your next class alone"]
+    },
+    {
+      art: "📚✋", caption: "English class",
+      sentences: [
+        "After lunch, I have English class.",
+        "The teacher asks everyone to say their name and one interesting thing about themselves.",
+        "I am scared. My English is not perfect.",
+        "But Priya looks at me and nods. \"You can do it,\" her eyes say."
+      ],
+      vocab: { introduce: { en: "to tell people your name for the first time", es: "presentarse — decir tu nombre por primera vez", ar: "تقديم نفسك — قول اسمك لأول مرة", zh: "介绍 — 第一次告诉别人你的名字", vi: "giới thiệu — nói tên lần đầu", ur: "تعارف کروانا — پہلی بار اپنا نام بتانا", ru: "представиться — назвать своё имя впервые" } },
+      choices: ["Stand up and speak", "Stay quiet and hope the teacher forgets you"]
+    },
+    {
+      art: "👏🌟", caption: "The end of the day",
+      sentences: [
+        "I stand up. \"My name is Sam,\" I say. \"I like basketball and cooking.\"",
+        "Everyone claps. The teacher smiles.",
+        "At the end of the day, Priya finds me.",
+        "\"Same time tomorrow?\" she asks.",
+        "I walk home feeling something new. Something like hope."
+      ],
+      vocab: { hope: { en: "a good feeling about the future", es: "esperanza — un sentimiento positivo sobre el futuro", ar: "أمل — شعور إيجابي تجاه المستقبل", zh: "希望 — 对未来的好感", vi: "hy vọng — cảm giác tốt về tương lai", ur: "امید — مستقبل کے بارے میں اچھا احساس", ru: "надежда — хорошее чувство о будущем" } },
+      choices: ["✓ Finish — Take the quiz!", "Read again from the start"]
+    }
+  ],
+  quiz: [
+    { q: "Where does Sam sit on the first day?", opts: ["In the library", "At an empty table in the cafeteria", "In the gym", "Outside"], ans: 1 },
+    { q: "What is Priya's advice about the food?", opts: ["Don't eat the soup", "Don't eat the pizza", "Don't eat the salad", "Eat everything"], ans: 1 },
+    { q: "What does Sam say in English class?", opts: ["I like music and sports", "I like basketball and cooking", "I don't speak English", "I like school"], ans: 1 },
+    { q: "How does Sam feel at the end of the day?", opts: ["Very sad", "Angry", "Something like hope", "Very tired"], ans: 2 },
+    { q: "What does 'nervous' mean?", opts: ["Happy and excited", "Feeling worried and scared", "Very tired", "Angry"], ans: 1 },
+    { q: "What does 'strict' mean?", opts: ["Kind and gentle", "Funny and silly", "Having firm rules; serious", "Very lazy"], ans: 2 }
+  ]
+},
+
+scary: {
+  label: "Scary & strange",
+  scenes: [
+    {
+      art: "🌙📚", caption: "Lincoln High — 9 PM",
+      sentences: [
+        "My name is Jordan.",
+        "It is late at night.",
+        "I am studying alone in the school library.",
+        "Everyone else went home hours ago.",
+        "The lights flicker."
+      ],
+      vocab: { flicker: { en: "to quickly turn on and off", es: "parpadear — encenderse y apagarse rápidamente", ar: "يومض — يضيء ويطفأ بسرعة", zh: "闪烁 — 快速开关", vi: "nhấp nháy — bật tắt nhanh", ur: "جھلملانا — تیزی سے آنا جانا", ru: "мерцать — быстро включаться и выключаться" } },
+      choices: ["Stay and keep studying", "Pack your things and leave"]
+    },
+    {
+      art: "👣🚪", caption: "The hallway",
+      sentences: [
+        "I hear a sound — like footsteps — in the hallway.",
+        "\"Hello?\" I call out.",
+        "No answer.",
+        "I close my book and listen.",
+        "The footsteps get closer."
+      ],
+      vocab: { footsteps: { en: "the sound of someone walking", es: "pasos — el sonido de alguien caminando", ar: "خطوات — صوت شخص يمشي", zh: "脚步声 — 走路的声音", vi: "tiếng bước chân — âm thanh bước đi", ur: "قدموں کی آواز — چلنے کی آواز", ru: "шаги — звук ходьбы" } },
+      choices: ["Hide under the table", "Open the door and look"]
+    },
+    {
+      art: "👻🌑", caption: "The shadow appears",
+      sentences: [
+        "The door opens. But no one is there.",
+        "I back away toward the window.",
+        "Then I see it — a shadow on the wall. Moving.",
+        "\"Who are you?\" I whisper."
+      ],
+      vocab: { shadow: { en: "a dark shape made by light behind something", es: "sombra — una forma oscura hecha por la luz", ar: "ظل — شكل مظلم ينشأ من الضوء", zh: "影子 — 光线后面形成的暗形", vi: "bóng tối — hình tối tạo bởi ánh sáng", ur: "سایہ — روشنی سے بنی سیاہ شکل", ru: "тень — тёмная фигура от света" } },
+      choices: ["Run to the door", "Wait and listen"]
+    },
+    {
+      art: "💀📖", caption: "The ghost speaks",
+      sentences: [
+        "The shadow speaks. \"I am the student who sat in your seat. Thirty years ago.\"",
+        "I cannot move. I cannot scream.",
+        "\"I just want you to know,\" the shadow says, \"...the test on Friday is very hard.\"",
+        "I blink. \"...What?\""
+      ],
+      vocab: { scream: { en: "to make a very loud noise because you are scared", es: "gritar — hacer un ruido muy fuerte por miedo", ar: "يصرخ — يصدر صوتاً عالياً خوفاً", zh: "尖叫 — 因为害怕发出很大的声音", vi: "la hét — kêu to vì sợ", ur: "چیخنا — ڈر سے بہت اونچی آواز نکالنا", ru: "кричать — издавать громкий звук от страха" } },
+      choices: ["Ask the ghost more questions", "Say thank you and study chapter seven"]
+    },
+    {
+      art: "📖⭐", caption: "A helpful ghost",
+      sentences: [
+        "The shadow laughs — a strange, echoing laugh.",
+        "\"Study chapter seven. I failed because of chapter seven.\"",
+        "Then the shadow disappears.",
+        "I look at my textbook. Chapter seven. I open it.",
+        "Maybe the strangest things can help you."
+      ],
+      vocab: { disappear: { en: "to suddenly not be there anymore", es: "desaparecer — no estar más de repente", ar: "يختفي — لا يكون موجوداً فجأة", zh: "消失 — 突然不见了", vi: "biến mất — đột nhiên không còn nữa", ur: "غائب ہونا — اچانک موجود نہ رہنا", ru: "исчезать — внезапно пропадать" } },
+      choices: ["✓ Finish — Take the quiz!", "Read again from the start"]
+    }
+  ],
+  quiz: [
+    { q: "Where is Jordan when the story starts?", opts: ["At home", "In the gym", "Alone in the school library", "In the cafeteria"], ans: 2 },
+    { q: "What does the shadow say about the test?", opts: ["It is easy", "It is on Monday", "It is on Friday and very hard", "There is no test"], ans: 2 },
+    { q: "What chapter does the ghost say to study?", opts: ["Chapter three", "Chapter five", "Chapter ten", "Chapter seven"], ans: 3 },
+    { q: "How does the story end?", opts: ["Jordan runs away", "Jordan opens the textbook and studies", "Jordan calls the police", "Jordan falls asleep"], ans: 1 },
+    { q: "What does 'flicker' mean?", opts: ["To shine very brightly", "To quickly turn on and off", "To make a loud noise", "To fall down"], ans: 1 },
+    { q: "What does 'disappear' mean?", opts: ["To become very big", "To move slowly", "To suddenly not be there anymore", "To make a sound"], ans: 2 }
+  ]
+},
+
+crush: {
+  label: "Crush & friendship",
+  scenes: [
+    {
+      art: "💗📖", caption: "History class",
+      sentences: [
+        "My name is Casey.",
+        "There is someone in my history class.",
+        "Their name is River.",
+        "River has kind eyes and always laughs at the teacher's bad jokes.",
+        "I want to talk to River, but I don't know what to say."
+      ],
+      vocab: { crush: { en: "a person you like very much and want to be close to", es: "enamoramiento — alguien que te gusta mucho", ar: "إعجاب — شخص تحبه كثيراً", zh: "暗恋 — 你非常喜欢的人", vi: "người thầm thương — người bạn rất thích", ur: "پسند — جسے آپ بہت پسند کرتے ہیں", ru: "симпатия — человек, который нравится" } },
+      choices: ["Ask my friend Bex for advice", "Try to talk to River directly"]
+    },
+    {
+      art: "👫❤️", caption: "A small moment",
+      sentences: [
+        "My friend Bex says, \"Just say hi.\"",
+        "That sounds easy. But my heart beats very fast when River is near.",
+        "One day, River drops a book.",
+        "I pick it up. Our hands touch for one second.",
+        "\"Thank you,\" River says, and smiles at me."
+      ],
+      vocab: { nervous: { en: "feeling worried and a little scared", es: "nervioso — sentirse preocupado y un poco asustado", ar: "متوتر — يشعر بالقلق", zh: "紧张 — 感到担心和有些害怕", vi: "lo lắng — cảm thấy lo và hơi sợ", ur: "گھبرایا — پریشان اور ڈرا ہوا", ru: "нервничать — чувствовать беспокойство" } },
+      choices: ["Say \"You're welcome\" and smile", "Say nothing and walk away"]
+    },
+    {
+      art: "✉️🌙", caption: "Writing a note",
+      sentences: [
+        "I feel my face get warm.",
+        "That night, I write River a note.",
+        "\"I like talking to you. Would you want to study together sometime?\"",
+        "I don't know if I should give it."
+      ],
+      vocab: { brave: { en: "not afraid to do something hard or scary", es: "valiente — no tener miedo de hacer algo difícil", ar: "شجاع — غير خائف من فعل شيء صعب", zh: "勇敢 — 不怕做困难的事", vi: "dũng cảm — không sợ làm điều khó", ur: "بہادر — مشکل کام سے نہ ڈرنا", ru: "храбрый — не бояться трудного" } },
+      choices: ["Give River the note", "Keep the note in your pocket"]
+    },
+    {
+      art: "🍽️💌", caption: "Lunchtime",
+      sentences: [
+        "The next day, I see River eating lunch alone.",
+        "This is my chance.",
+        "I walk over. I sit down. I put the note on the table.",
+        "River reads it slowly. Then looks up at me."
+      ],
+      vocab: { chance: { en: "a good time to do something", es: "oportunidad — un buen momento para hacer algo", ar: "فرصة — وقت جيد للقيام بشيء ما", zh: "机会 — 做某事的好时机", vi: "cơ hội — thời điểm tốt để làm gì đó", ur: "موقع — کچھ کرنے کا اچھا وقت", ru: "шанс — хорошее время что-то сделать" } },
+      choices: ["Wait and see what River says", "Take the note back — you're too nervous!"]
+    },
+    {
+      art: "😊🌸", caption: "A happy ending",
+      sentences: [
+        "\"I would really like that,\" River says.",
+        "I smile so wide it hurts.",
+        "Bex was right. Sometimes you just have to say hi."
+      ],
+      vocab: { friendship: { en: "a close, caring relationship between two people", es: "amistad — una relación cercana y cariñosa", ar: "صداقة — علاقة قريبة ومحبة بين شخصين", zh: "友谊 — 两人之间亲密关爱的关系", vi: "tình bạn — mối quan hệ thân thiết giữa hai người", ur: "دوستی — دو لوگوں کے درمیان قریبی رشتہ", ru: "дружба — близкие, заботливые отношения" } },
+      choices: ["✓ Finish — Take the quiz!", "Read again from the start"]
+    }
+  ],
+  quiz: [
+    { q: "What is the name of Casey's crush?", opts: ["Priya", "Bex", "River", "Sam"], ans: 2 },
+    { q: "What advice does Bex give Casey?", opts: ["Write a letter", "Just say hi", "Move to a different class", "Don't do anything"], ans: 1 },
+    { q: "What does Casey write in the note to River?", opts: ["I don't like you", "Will you be my partner for class?", "I like talking to you. Want to study together?", "You dropped your book"], ans: 2 },
+    { q: "How does the story end?", opts: ["River says no", "River ignores the note", "River says yes to studying together", "Casey keeps the note"], ans: 2 },
+    { q: "What does 'brave' mean?", opts: ["Very fast", "Not afraid to do something hard", "Very sad", "Confused"], ans: 1 },
+    { q: "What does 'chance' mean?", opts: ["A problem", "A friend", "A good time to do something", "A type of food"], ans: 2 }
+  ]
+},
+
+mystery: {
+  label: "Mystery",
+  scenes: [
+    {
+      art: "🔍🏆", caption: "Lincoln High — Tuesday morning",
+      sentences: [
+        "My name is Detective Dana.",
+        "Well — I am a student. But I want to be a detective someday.",
+        "Today, something strange happened at school.",
+        "The school trophy is missing.",
+        "It was on the shelf in the main office this morning."
+      ],
+      vocab: { missing: { en: "gone; not in the right place", es: "desaparecido — no está en su lugar", ar: "مفقود — ليس في مكانه الصحيح", zh: "失踪 — 不见了", vi: "mất tích — không có ở nơi đúng", ur: "گم — صحیح جگہ پر نہیں", ru: "пропавший — нет на своём месте" } },
+      choices: ["Go talk to Marcus the athlete", "Look for clues near the main office"]
+    },
+    {
+      art: "🏋️🤔", caption: "Talking to Marcus",
+      sentences: [
+        "I have three suspects.",
+        "First, Marcus — the star athlete who lost a big game last week.",
+        "\"Where were you this morning?\" I ask.",
+        "\"In the gym,\" he says. \"Coach can tell you.\"",
+        "He looks sad, not guilty."
+      ],
+      vocab: { suspect: { en: "a person who might have done something wrong", es: "sospechoso — una persona que podría haber hecho algo malo", ar: "مشتبه به — شخص ربما فعل شيئاً خاطئاً", zh: "嫌疑人 — 可能做了错事的人", vi: "nghi phạm — người có thể đã làm điều sai", ur: "مشتبہ — وہ شخص جس نے غلط کام کیا ہو", ru: "подозреваемый — человек, который мог совершить что-то плохое" } },
+      choices: ["Believe Marcus and move on", "Check with the coach first"]
+    },
+    {
+      art: "📚🧑", caption: "The new student",
+      sentences: [
+        "Next I find the new student — their name is Lee.",
+        "Lee is sitting alone, reading a book about famous crimes.",
+        "\"Did you take the trophy?\" I ask directly.",
+        "Lee looks surprised. \"No! I just got here. I don't even know what trophy.\""
+      ],
+      vocab: { innocent: { en: "not guilty; did not do anything wrong", es: "inocente — no culpable; no hizo nada malo", ar: "بريء — غير مذنب", zh: "无辜 — 没有做错事", vi: "vô tội — không có lỗi", ur: "بے قصور — غلطی نہیں کی", ru: "невиновный — не сделал ничего плохого" } },
+      choices: ["Believe Lee", "Keep Lee as a suspect"]
+    },
+    {
+      art: "🎨🖌️", caption: "The art room",
+      sentences: [
+        "That leaves Ms. Chen.",
+        "I walk to the art room. I knock on the open door.",
+        "Ms. Chen is painting. And on her desk — behind her coffee cup — I see it.",
+        "The trophy."
+      ],
+      vocab: { evidence: { en: "something that shows the truth", es: "evidencia — algo que muestra la verdad", ar: "دليل — شيء يُظهر الحقيقة", zh: "证据 — 显示真相的东西", vi: "bằng chứng — thứ gì đó cho thấy sự thật", ur: "ثبوت — وہ چیز جو سچ ظاہر کرے", ru: "улика — то, что показывает правду" } },
+      choices: ["Ask Ms. Chen about the trophy calmly", "Take the trophy and go report to the office"]
+    },
+    {
+      art: "✅🌟", caption: "Mystery solved",
+      sentences: [
+        "\"Ms. Chen,\" I say calmly. \"Why is the school trophy on your desk?\"",
+        "She turns red. \"I — I was painting it. As a surprise. It was getting rusty.\"",
+        "I look at the trophy. It is clean and bright. Freshly painted.",
+        "\"Next time,\" I say, \"tell someone first.\"",
+        "Mystery solved."
+      ],
+      vocab: { solve: { en: "to find the answer to a problem", es: "resolver — encontrar la respuesta a un problema", ar: "يحل — يجد إجابة المشكلة", zh: "解决 — 找到问题的答案", vi: "giải quyết — tìm ra câu trả lời", ur: "حل کرنا — مسئلے کا جواب ڈھونڈنا", ru: "решить — найти ответ на проблему" } },
+      choices: ["✓ Finish — Take the quiz!", "Read again from the start"]
+    }
+  ],
+  quiz: [
+    { q: "What is missing at the beginning of the story?", opts: ["A student's backpack", "The school trophy", "A library book", "Ms. Chen's keys"], ans: 1 },
+    { q: "Where does Marcus say he was that morning?", opts: ["In the library", "In the classroom", "In the gym", "At home"], ans: 2 },
+    { q: "What is Lee doing when Dana finds Lee?", opts: ["Eating lunch", "Reading a book about famous crimes", "Talking to Ms. Chen", "Running in the hallway"], ans: 1 },
+    { q: "Why did Ms. Chen take the trophy?", opts: ["She wanted to keep it", "She was angry at the school", "She was painting it as a surprise", "She dropped it by accident"], ans: 2 },
+    { q: "What does 'suspect' mean?", opts: ["A person who helps you", "A teacher at school", "A person who might have done something wrong", "A type of clue"], ans: 2 },
+    { q: "What does 'evidence' mean?", opts: ["A question you ask", "Something that shows the truth", "A type of crime", "A person's name"], ans: 1 }
+  ]
+},
+
+hero: {
+  label: "Superhero",
+  scenes: [
+    {
+      art: "⚡🏫", caption: "Westview High — Monday morning",
+      sentences: [
+        "My name is Alex.",
+        "I am a student at Westview High School.",
+        "Yesterday, something strange happened.",
+        "I was walking home when lightning hit a tree near me.",
+        "I fell down."
+      ],
+      vocab: { lightning: { en: "a bright flash of electricity from the sky", es: "rayo — un destello brillante de electricidad del cielo", ar: "برق — وميض ساطع من الكهرباء في السماء", zh: "闪电 — 天空中明亮的电闪", vi: "sét — tia sáng điện từ bầu trời", ur: "بجلی — آسمان سے برقی چمک", ru: "молния — яркая электрическая вспышка с неба" } },
+      choices: ["Tell a friend about the power", "Keep it secret and go to class"]
+    },
+    {
+      art: "🤫✨", caption: "The hallway — before first class",
+      sentences: [
+        "Now, this morning, I can feel something different.",
+        "When I picked up my backpack, it floated off the ground.",
+        "I have a superpower.",
+        "I find my friend Marco in the hallway.",
+        "I show him. I lift my hand and a pencil rises into the air."
+      ],
+      vocab: { float: { en: "to move slowly through the air", es: "flotar — moverse lentamente por el aire", ar: "يطفو — يتحرك ببطء في الهواء", zh: "漂浮 — 在空中慢慢移动", vi: "bay lơ lửng — di chuyển chậm qua không khí", ur: "تیرنا — ہوا میں آہستہ حرکت کرنا", ru: "парить — медленно двигаться в воздухе" } },
+      choices: ["Look outside when you hear a loud noise", "Help other students first"]
+    },
+    {
+      art: "🚨🤖", caption: "Outside Westview High",
+      sentences: [
+        "His eyes get very big.",
+        "\"Alex!\" he whispers. \"That is amazing. But — be careful.\"",
+        "Then we hear a loud noise from outside.",
+        "Through the window, I see something terrifying.",
+        "A big robot is walking down the street."
+      ],
+      vocab: { terrifying: { en: "very, very scary", es: "aterrador — muy, muy asustador", ar: "مرعب — مخيف جداً", zh: "可怕的 — 非常非常吓人", vi: "kinh khủng — rất rất đáng sợ", ur: "خوفناک — بہت بہت ڈراؤنا", ru: "ужасающий — очень-очень страшный" } },
+      choices: ["Run outside and face the robot", "Help the students escape first"]
+    },
+    {
+      art: "😰⚡", caption: "The moment of truth",
+      sentences: [
+        "It is enormous. Bigger than a bus.",
+        "Students are running. Teachers are shouting.",
+        "I stand in front of the robot. My hands are trembling.",
+        "I close my eyes. I concentrate."
+      ],
+      vocab: { concentrate: { en: "to think very hard about one thing", es: "concentrarse — pensar muy fuerte en una cosa", ar: "يركز — يفكر بشدة في شيء واحد", zh: "集中注意力 — 专注于一件事", vi: "tập trung — suy nghĩ rất kỹ về một điều", ur: "توجہ مرکوز کرنا — ایک چیز پر بہت زور سے سوچنا", ru: "концентрироваться — очень сосредоточенно думать" } },
+      choices: ["Use your power now!", "Wait for the right moment"]
+    },
+    {
+      art: "🌟🦸", caption: "Hero",
+      sentences: [
+        "I feel the power move through my body.",
+        "And I push.",
+        "The robot flies backward. It hits the street. It does not move again.",
+        "The school is safe.",
+        "The teacher says: \"A hero is someone who uses power to help other people.\"",
+        "I smile. My name is Alex. And I am a superhero."
+      ],
+      vocab: { hero: { en: "a person who does something very brave to help others", es: "héroe — una persona que hace algo muy valiente para ayudar a otros", ar: "بطل — شخص يفعل شيئاً شجاعاً جداً لمساعدة الآخرين", zh: "英雄 — 为帮助他人做出非常勇敢之事的人", vi: "anh hùng — người làm điều rất dũng cảm để giúp người khác", ur: "ہیرو — وہ شخص جو دوسروں کی مدد کے لیے بہادری کا کام کرے", ru: "герой — человек, совершивший смелый поступок ради других" } },
+      choices: ["✓ Finish — Take the quiz!", "Read again from the start"]
+    }
+  ],
+  quiz: [
+    { q: "How did Alex get a superpower?", opts: ["A scientist gave it", "Lightning hit a tree near Alex", "Alex drank a special drink", "Alex was born with it"], ans: 1 },
+    { q: "What does Alex do when the robot appears?", opts: ["Runs away", "Calls the police", "Stands in front of it and uses the power", "Hides in the library"], ans: 2 },
+    { q: "What is the robot bigger than?", opts: ["A car", "A truck", "A bus", "A house"], ans: 2 },
+    { q: "What does the teacher say a hero is?", opts: ["Someone very strong", "Someone very fast", "Someone who uses power to help others", "Someone who never loses"], ans: 2 },
+    { q: "What does 'terrifying' mean?", opts: ["Very beautiful", "Very funny", "Very, very scary", "Very small"], ans: 2 },
+    { q: "What does 'concentrate' mean?", opts: ["To run very fast", "To make a loud noise", "To think very hard about one thing", "To fly through the air"], ans: 2 }
+  ]
+}
+
+}; // end STORIES
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let selectedGenre = null;
+let selectedLang = 'en';
+let currentScene = 0;
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+function setLang(lang) {
+  selectedLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+}
+
+function selectGenre(genre, el) {
+  selectedGenre = genre;
+  document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('startBtn').classList.add('active');
+}
+
+function startGame() {
+  if (!selectedGenre) return;
+  currentScene = 0;
+  document.getElementById('genre-selector').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  const li = document.getElementById('lang-indicator');
+  if (selectedLang !== 'en') {
+    const labels = { es:'Español', ar:'العربية', zh:'中文', vi:'Tiếng Việt', ur:'اردو', ru:'Русский' };
+    li.textContent = '🌐 ' + labels[selectedLang];
+    li.style.display = 'inline-block';
+  } else { li.style.display = 'none'; }
+  renderScene();
+}
+
+function goHome() {
+  document.getElementById('genre-selector').style.display = 'block';
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'none';
+  currentScene = 0;
+}
+
+// ═══════════════════════════════════════════
+// RENDER SCENE
+// ═══════════════════════════════════════════
+function renderScene() {
+  const story = STORIES[selectedGenre];
+  const scene = story.scenes[currentScene];
+  const t = THEMES[selectedGenre];
+  const totalScenes = story.scenes.length;
+
+  document.getElementById('progress-bar').textContent = `Scene ${currentScene + 1} of ${totalScenes}`;
+  document.getElementById('progress-bar').style.color = t.captionColor;
+
+  let html = `<div class="story-panel" style="background:${t.panelBg}; border:2px solid ${t.headerBg}; box-shadow:4px 4px 0 ${t.headerBg};">`;
+  html += `<div class="scene-header" style="background:${t.headerBg}; color:${t.headerColor}; font-family:${t.titleFont}; letter-spacing:2px;">${story.label.toUpperCase()}</div>`;
+  html += `<div class="scene-art" style="background:${t.artBg};">${scene.art}</div>`;
+  html += `<div class="scene-caption" style="color:${t.captionColor}; font-family:${t.titleFont};">${scene.caption}</div>`;
+  html += `<div class="scene-body" style="color:${t.bodyColor}; font-family:${t.font};">`;
+
+  scene.sentences.forEach((sentence, si) => {
+    const tid = `st-${currentScene}-${si}`;
+    const trans = (selectedLang !== 'en' && TRANS[selectedLang] && TRANS[selectedLang][sentence]) ? TRANS[selectedLang][sentence] : null;
+    if (trans) {
+      html += `<span class="story-sentence" style="border-bottom-color:${t.wordColor};" onclick="toggleTrans('${tid}')">${sentence}</span> `;
+      html += `<span class="sentence-trans" id="${tid}" style="border-left-color:${t.wordColor}; color:${t.captionColor}; background:${t.artBg}55;">${trans}</span>`;
+    } else {
+      html += `<span>${sentence}</span> `;
+    }
+  });
+
+  html += `</div></div>`;
+
+  // vocab bar
+  if (scene.vocab) {
+    html += `<div class="vocab-bar" style="background:${t.vocabBg}; border:1.5px solid ${t.headerBg};">`;
+    html += `<div class="vocab-bar-title" style="color:${t.captionColor};">📖 Vocabulary — tap to see meaning</div>`;
+    Object.entries(scene.vocab).forEach(([word, defs]) => {
+      const def = selectedLang !== 'en' && defs[selectedLang] ? defs[selectedLang] : defs.en;
+      html += `<span class="vocab-chip" style="background:${t.vocabChipBg};color:${t.vocabChipColor};" onclick="toggleDef('def-${currentScene}-${word}')">${word}</span>`;
+      html += `<div class="vocab-def-row" id="def-${currentScene}-${word}" style="background:${t.vocabDefBg};color:${t.bodyColor};">${def}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // choices
+  html += `<div class="choices-wrap" style="background:${t.choicesBg}; border:2px solid ${t.headerBg}; box-shadow:3px 3px 0 ${t.headerBg};">`;
+  html += `<div class="choices-title" style="color:${t.choicesColor}; font-family:${t.titleFont};">What do you do?</div>`;
+  const letters = ['A','B','C','D'];
+  scene.choices.forEach((choice, ci) => {
+    const isFinish = choice.startsWith('✓ Finish');
+    const isRestart = choice.includes('Read again');
+    html += `<button class="choice-btn" style="background:${t.btnBg};color:${t.btnColor};"
+      onmouseover="this.style.background='${t.btnHover}'" onmouseout="this.style.background='${t.btnBg}'"
+      onclick="handleChoice(${ci}, ${isFinish}, ${isRestart})">
+      <span class="choice-letter">${letters[ci]}.</span>${choice}
+    </button>`;
+  });
+  html += `</div>`;
+
+  document.getElementById('story-container').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function toggleTrans(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+function toggleDef(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+function handleChoice(ci, isFinish, isRestart) {
+  if (isRestart) { currentScene = 0; renderScene(); return; }
+  if (isFinish) { startQuiz(); return; }
+  currentScene++;
+  const story = STORIES[selectedGenre];
+  if (currentScene >= story.scenes.length) { startQuiz(); return; }
+  renderScene();
+}
+
+// ═══════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════
+function startQuiz() {
+  quizIndex = 0;
+  quizScore = 0;
+  quizAnswered = false;
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  renderQuizQ();
+}
+
+function renderQuizQ() {
+  const story = STORIES[selectedGenre];
+  const t = THEMES[selectedGenre];
+  const qs = story.quiz;
+  if (quizIndex >= qs.length) { showResults(); return; }
+  const q = qs[quizIndex];
+  quizAnswered = false;
+
+  let html = `<div class="quiz-panel" style="background:${t.quizBg};border:2px solid ${t.quizBorder};box-shadow:4px 4px 0 ${t.quizBorder};">`;
+  html += `<div class="quiz-q-num" style="color:${t.captionColor};font-family:${t.titleFont};">Question ${quizIndex+1} of ${qs.length}</div>`;
+  html += `<div class="quiz-q-text" style="color:${t.quizColor};font-family:${t.font};">${q.q}</div>`;
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, oi) => {
+    html += `<button class="quiz-opt" id="opt-${oi}" style="border-color:${t.quizBorder};color:${t.quizColor};font-family:${t.font};"
+      onclick="answerQuiz(${oi})">
+      <span style="font-weight:700;margin-right:8px;opacity:0.6;">${letters[oi]}.</span>${opt}
+    </button>`;
+  });
+  html += `<div class="quiz-feedback" id="qfeedback"></div>`;
+  html += `<button class="quiz-next" id="qnext" style="background:${t.nextBg};color:${t.nextColor};font-family:${t.font};" onclick="nextQ()">Next →</button>`;
+  html += `</div>`;
+  document.getElementById('quiz-container').innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+function answerQuiz(chosen) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const story = STORIES[selectedGenre];
+  const t = THEMES[selectedGenre];
+  const q = story.quiz[quizIndex];
+  const correct = chosen === q.ans;
+  if (correct) quizScore++;
+
+  document.querySelectorAll('.quiz-opt').forEach((btn, i) => {
+    btn.style.pointerEvents = 'none';
+    if (i === q.ans) { btn.style.background = t.correctBg; btn.style.borderColor = '#2a8a2a'; btn.style.color = t.correctColor; }
+    else if (i === chosen && !correct) { btn.style.background = t.wrongBg; btn.style.borderColor = '#c04040'; btn.style.color = t.wrongColor; }
+  });
+
+  const fb = document.getElementById('qfeedback');
+  fb.textContent = correct ? '✓ Correct!' : `✗ The answer is: ${q.opts[q.ans]}`;
+  fb.style.background = correct ? t.correctBg : t.wrongBg;
+  fb.style.color = correct ? t.correctColor : t.wrongColor;
+  fb.classList.add('show');
+
+  const nxt = document.getElementById('qnext');
+  nxt.style.background = t.nextBg;
+  nxt.style.color = t.nextColor;
+  nxt.classList.add('show');
+}
+
+function nextQ() {
+  quizIndex++;
+  renderQuizQ();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  const total = STORIES[selectedGenre].quiz.length;
+  const pct = quizScore / total;
+  const icon = pct >= 0.8 ? '🏆' : pct >= 0.6 ? '⭐' : '📖';
+  const title = pct >= 0.8 ? 'Excellent work!' : pct >= 0.6 ? 'Good job!' : 'Keep practicing!';
+  const sub = pct >= 0.8 ? 'You understood the story very well.' : pct >= 0.6 ? 'You understood most of the story.' : 'Read the story again to help you remember.';
+  document.getElementById('results-icon').textContent = icon;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-sub').textContent = sub;
+  document.getElementById('results-score').textContent = `${quizScore}/${total}`;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
