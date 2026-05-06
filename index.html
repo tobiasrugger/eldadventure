@@ -118,7 +118,41 @@ body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif
 
 .progress-bar { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; text-align: right; margin-bottom: 8px; }
 
-/* ── QUIZ SCREEN ── */
+/* ── VOTE SCREEN ── */
+.vote-card {
+  background:#fff0f5;border-radius:14px;border:2px solid #f4c0d1;
+  padding:20px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;
+}
+.vote-card:hover { border-color:#e05080;transform:translateY(-2px);box-shadow:0 4px 16px rgba(224,80,128,0.15); }
+.vote-card.selected { border-color:#e05080;background:#fce0ec;box-shadow:0 0 0 3px rgba(224,80,128,0.2); }
+.vote-card.disabled { opacity:0.5;cursor:not-allowed;transform:none; }
+.vc-label { font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px; }
+.vc-label.character { color:#1a4a6e; }
+.vc-label.conflict { color:#7a3800; }
+.vc-label.setting { color:#1a5a1a; }
+.vc-label.genre { color:#4a0a28; }
+.vc-title { font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:6px; }
+.vc-desc { font-size:14px;color:#666;line-height:1.5; }
+.vote-submit-btn {
+  display:block;width:100%;padding:14px;border-radius:10px;border:none;
+  background:#e05080;color:#fff;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:16px;cursor:pointer;transition:all 0.15s;
+  margin-top:4px;
+}
+.vote-submit-btn:hover { background:#c03060; }
+.vote-submit-btn:disabled { opacity:0.4;cursor:not-allowed; }
+.vote-closed-msg { text-align:center;padding:2rem;color:#888;font-size:15px; }
+.vote-screen-title { font-family:'Satisfy',cursive;font-size:1.6rem;color:#8b1a4a;margin-bottom:6px;text-align:center; }
+.vote-screen-sub { font-size:14px;color:#888;text-align:center;margin-bottom:1.2rem; }
+.vote-email-field { margin-bottom:14px; }
+.vote-email-field label { display:block;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px; }
+.vote-email-field input { width:100%;padding:11px 14px;border-radius:10px;border:2px solid #f4c0d1;font-family:'Nunito',sans-serif;font-size:15px;outline:none;transition:border-color 0.15s; }
+.vote-email-field input:focus { border-color:#e05080; }
+.vote-thankyou { text-align:center;padding:2rem 1rem; }
+.vote-thankyou .vt-icon { font-size:52px;margin-bottom:10px; }
+.vote-thankyou .vt-title { font-family:'Satisfy',cursive;font-size:1.6rem;color:#8b1a4a;margin-bottom:8px; }
+.vote-thankyou .vt-sub { font-size:15px;color:#666;line-height:1.6; }
+
 #quiz-screen { display: none; max-width: 640px; margin: 0 auto; padding: 1rem; }
 .quiz-panel { border-radius: 10px; padding: 1.5rem; margin-bottom: 14px; animation: fadeUp 0.3s ease; }
 .quiz-q-num { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; opacity: 0.6; }
@@ -288,7 +322,18 @@ body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif
   <div class="results-sub" id="results-sub">You finished the story and the quiz.</div>
   <div class="results-score" id="results-score">8/10</div>
   <div class="results-score-label">correct answers</div>
-  <button class="results-play-again" onclick="goHome()">Play again</button>
+  <div id="vote-prompt" style="display:none; margin-top:1.5rem;">
+    <div style="font-size:14px;font-weight:700;color:#8b1a4a;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">💌 What happens next?</div>
+    <p style="font-size:15px;color:#555;margin-bottom:1rem;">Vote for Part 2 of the Crush &amp; Friendship story.</p>
+    <button onclick="goToVote()" style="padding:12px 28px;border-radius:8px;border:none;background:#e05080;color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;">Vote now →</button>
+  </div>
+  <button class="results-play-again" onclick="goHome()" style="margin-top:1rem;">Play again</button>
+</div>
+
+<!-- VOTE SCREEN -->
+<div id="vote-screen" style="display:none; max-width:580px; margin:0 auto; padding:1rem;">
+  <button class="back-btn" onclick="goHome()">← Back to stories</button>
+  <div id="vote-container"></div>
 </div>
 
 <script>
@@ -1252,6 +1297,8 @@ function goHome() {
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('quiz-screen').style.display = 'none';
   document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('vote-screen').style.display = 'none';
+  document.getElementById('vote-prompt').style.display = 'none';
   currentSceneKey = 'intro';
 }
 
@@ -1426,23 +1473,131 @@ function showResults() {
   const langLabels = { es:'Spanish', ar:'Arabic', zh:'Mandarin', vi:'Vietnamese', ur:'Urdu', ru:'Russian' };
   fetch(`${SUPA_URL}/rest/v1/eld_adventure_results`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({
-      first_name: studentFirst,
-      last_name: studentLast,
-      language: langLabels[studentLang] || studentLang,
-      genre: STORIES[selectedGenre].label,
-      score: quizScore,
-      total: total,
-      pct: Math.round(pct * 100),
-      completed_at: new Date().toISOString()
-    })
-  }).catch(() => {});
+    headers: { 'Content-Type':'application/json', 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY, 'Prefer':'return=minimal' },
+    body: JSON.stringify({ first_name:studentFirst, last_name:studentLast, language:langLabels[studentLang]||studentLang, genre:STORIES[selectedGenre].label, score:quizScore, total:total, pct:Math.round(pct*100), completed_at:new Date().toISOString() })
+  }).catch(()=>{});
+  // Check if voting is open — show vote prompt only for crush story
+  if (selectedGenre === 'crush') checkVotingOpen();
+}
+
+async function checkVotingOpen() {
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/eld_voting_session?select=is_open&limit=1`, {
+      headers: { 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY }
+    });
+    const data = await res.json();
+    if (data && data[0] && data[0].is_open) {
+      document.getElementById('vote-prompt').style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+function goToVote() {
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('vote-screen').style.display = 'block';
+  loadVoteScreen();
+  window.scrollTo(0,0);
+}
+
+async function loadVoteScreen() {
+  const container = document.getElementById('vote-container');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;">Loading…</div>';
+  try {
+    // Check session still open + get options
+    const [sessRes, myVoteRes] = await Promise.all([
+      fetch(`${SUPA_URL}/rest/v1/eld_voting_session?select=*&limit=1`, { headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY} }),
+      fetch(`${SUPA_URL}/rest/v1/eld_votes?select=id&first_name=eq.${encodeURIComponent(studentFirst)}&last_name=eq.${encodeURIComponent(studentLast)}&limit=1`, { headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY} })
+    ]);
+    const sess = (await sessRes.json())[0];
+    const myVotes = await myVoteRes.json();
+
+    if (!sess || !sess.is_open) {
+      container.innerHTML = '<div class="vote-closed-msg">⏰ Voting is not open right now.<br>Wait for your teacher to open it.</div>';
+      return;
+    }
+    if (myVotes && myVotes.length > 0) {
+      renderVoteThankyou(container, null);
+      return;
+    }
+    renderVoteOptions(container, sess.options || []);
+  } catch(e) {
+    container.innerHTML = '<div class="vote-closed-msg">Could not load voting. Try again.</div>';
+  }
+}
+
+function renderVoteOptions(container, options) {
+  const FALLBACK = [
+    {id:'character',label:'Character',emoji:'🧠',title:'Bex Causes a Problem',desc:'Bex tells everyone Casey likes River before Casey is ready. Now it\'s out. Casey has to decide: be angry at Bex, or deal with what\'s already in the open?'},
+    {id:'conflict',label:'Conflict',emoji:'⚡',title:'The Study Date Goes Wrong',desc:'Casey and River meet to study. But River brings someone else — confident, funny, and clearly interested in River too.'},
+    {id:'setting',label:'Setting',emoji:'🌍',title:'A School Dance is Announced',desc:'The school announces a dance. Suddenly everything is different — who are you going with, who do you want to go with?'},
+    {id:'genre',label:'Genre',emoji:'🎭',title:'A Secret Changes Everything',desc:'River texts Casey late at night: "I need to tell you something. Promise you won\'t be weird about it." The story starts to feel like a mystery.'}
+  ];
+  const opts = options.length ? options : FALLBACK;
+  let selectedId = null;
+
+  let html = `
+    <div class="vote-screen-title">What happens next?</div>
+    <div class="vote-screen-sub">Choose the direction for Part 2 of the story.</div>
+    <div class="vote-email-field">
+      <label>Your school email</label>
+      <input type="email" id="vote-email" placeholder="yourname@school.edu">
+    </div>
+    <div id="vote-options-list">
+  `;
+  opts.forEach((opt,i) => {
+    html += `
+      <div class="vote-card" id="vopt-${opt.id}" onclick="selectVoteOption('${opt.id}')">
+        <div class="vc-label ${opt.id}">${opt.emoji} ${opt.label}</div>
+        <div class="vc-title">${opt.title}</div>
+        <div class="vc-desc">${opt.desc||''}</div>
+      </div>`;
+  });
+  html += `</div>
+    <button class="vote-submit-btn" id="vote-submit-btn" onclick="submitVote()" disabled>Cast my vote →</button>
+  `;
+  container.innerHTML = html;
+
+  window._voteOptions = opts;
+  window._selectedVoteId = null;
+}
+
+function selectVoteOption(id) {
+  window._selectedVoteId = id;
+  document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById('vopt-' + id);
+  if (el) el.classList.add('selected');
+  document.getElementById('vote-submit-btn').disabled = false;
+}
+
+async function submitVote() {
+  const optId = window._selectedVoteId;
+  if (!optId) return;
+  const email = document.getElementById('vote-email').value.trim();
+  const opt = (window._voteOptions||[]).find(o=>o.id===optId);
+  const btn = document.getElementById('vote-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  try {
+    await fetch(`${SUPA_URL}/rest/v1/eld_votes`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'},
+      body: JSON.stringify({ first_name:studentFirst, last_name:studentLast, email:email||null, option_id:optId, option_title:opt?opt.title:'', voted_at:new Date().toISOString() })
+    });
+    renderVoteThankyou(document.getElementById('vote-container'), opt);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Cast my vote →';
+    alert('Something went wrong. Try again.');
+  }
+}
+
+function renderVoteThankyou(container, opt) {
+  container.innerHTML = `
+    <div class="vote-thankyou">
+      <div class="vt-icon">💌</div>
+      <div class="vt-title">Vote cast!</div>
+      <div class="vt-sub">${opt ? `You voted for:<br><strong>${opt.emoji} ${opt.title}</strong><br><br>` : ''}Your teacher will reveal the winner and we will write Part 2 together.</div>
+    </div>`;
 }
 </script>
 </body>
