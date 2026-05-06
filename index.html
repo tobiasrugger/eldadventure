@@ -133,6 +133,9 @@ body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif
 .vc-label.genre { color:#4a0a28; }
 .vc-title { font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:6px; }
 .vc-desc { font-size:14px;color:#666;line-height:1.5; }
+.vote-trans-btn { background:none;border:none;font-size:12px;color:#c03060;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;padding:0;margin-left:6px;opacity:0.7;text-decoration:underline;vertical-align:middle; }
+.vote-trans-btn:hover { opacity:1; }
+.vote-trans-text { margin-top:8px;padding:8px 12px;background:rgba(224,80,128,0.08);border-left:3px solid #e05080;border-radius:0 6px 6px 0;font-size:13px;color:#8b1a4a;line-height:1.5;font-style:italic; }
 .vote-submit-btn {
   display:block;width:100%;padding:14px;border-radius:10px;border:none;
   background:#e05080;color:#fff;font-family:'Nunito',sans-serif;
@@ -1532,8 +1535,51 @@ function renderVoteOptions(container, options) {
     {id:'setting',label:'Setting',emoji:'🌍',title:'A School Dance is Announced',desc:'The school announces a dance. Suddenly everything is different — who are you going with, who do you want to go with?'},
     {id:'genre',label:'Genre',emoji:'🎭',title:'A Secret Changes Everything',desc:'River texts Casey late at night: "I need to tell you something. Promise you won\'t be weird about it." The story starts to feel like a mystery.'}
   ];
+
+  const VOTE_TRANS = {
+    es: {
+      character: { title:'Bex causa un problema', desc:'Bex le dice a todos que Casey le gusta River antes de que Casey esté listo/a. Ahora todos lo saben. Casey tiene que decidir: ¿enojarse con Bex o aceptar lo que ya pasó?' },
+      conflict:  { title:'La cita de estudio sale mal', desc:'Casey y River se reúnen para estudiar. Pero River trae a alguien más — seguro/a, divertido/a, y claramente interesado/a en River también.' },
+      setting:   { title:'Anuncian un baile escolar', desc:'La escuela anuncia un baile. De repente todo cambia — ¿con quién vas, con quién quieres ir?' },
+      genre:     { title:'Un secreto lo cambia todo', desc:'River le escribe a Casey de noche: "Necesito decirte algo. Prométeme que no te pondrás raro/a." La historia empieza a sentirse como un misterio.' }
+    },
+    ar: {
+      character: { title:'بيكس تسبب مشكلة', desc:'تخبر بيكس الجميع أن كيسي يحب ريفر قبل أن يكون كيسي مستعداً. الآن الجميع يعرف. على كيسي أن يقرر: هل يغضب من بيكس أم يتعامل مع ما حدث؟' },
+      conflict:  { title:'موعد الدراسة يسوء', desc:'يلتقي كيسي وريفر للدراسة. لكن ريفر يأتي مع شخص آخر — واثق، مضحك، ومهتم بريفر بوضوح.' },
+      setting:   { title:'يُعلن عن حفلة مدرسية', desc:'تعلن المدرسة عن حفلة راقصة. فجأة كل شيء تغير — مع من ستذهب؟ مع من تريد أن تذهب؟' },
+      genre:     { title:'سر يغير كل شيء', desc:'يرسل ريفر رسالة إلى كيسي في الليل: "أحتاج أن أخبرك بشيء. وعدني ألا تتصرف بغرابة." القصة تبدأ تشبه لغزاً.' }
+    },
+    zh: {
+      character: { title:'贝克斯惹了麻烦', desc:'贝克斯在凯西准备好之前就告诉了所有人凯西喜欢河流。现在大家都知道了。凯西必须决定：对贝克斯生气，还是接受已经发生的事？' },
+      conflict:  { title:'学习约会出了问题', desc:'凯西和河流相约一起学习。但河流带来了另一个人——自信、有趣，而且明显对河流感兴趣。' },
+      setting:   { title:'学校宣布举办舞会', desc:'学校宣布举办舞会。突然一切都不同了——你和谁去？你想和谁去？' },
+      genre:     { title:'一个秘密改变了一切', desc:'河流深夜发信息给凯西："我需要告诉你一件事。答应我你不会觉得奇怪。"故事开始感觉像一个谜。' }
+    },
+    vi: {
+      character: { title:'Bex gây ra vấn đề', desc:'Bex nói với mọi người rằng Casey thích River trước khi Casey sẵn sàng. Bây giờ mọi người đều biết. Casey phải quyết định: tức giận với Bex hay đối mặt với những gì đã xảy ra?' },
+      conflict:  { title:'Buổi học cùng nhau trở nên tệ', desc:'Casey và River gặp nhau để học. Nhưng River mang theo người khác — tự tin, vui vẻ, và rõ ràng quan tâm đến River.' },
+      setting:   { title:'Trường thông báo về buổi khiêu vũ', desc:'Trường thông báo có buổi khiêu vũ. Đột nhiên mọi thứ thay đổi — bạn đi với ai, bạn muốn đi với ai?' },
+      genre:     { title:'Một bí mật thay đổi tất cả', desc:'River nhắn tin cho Casey vào đêm khuya: "Tôi cần nói với bạn điều gì đó. Hứa với tôi bạn sẽ không thấy kỳ lạ." Câu chuyện bắt đầu cảm giác như một bí ẩn.' }
+    },
+    ur: {
+      character: { title:'بیکس نے مسئلہ پیدا کیا', desc:'بیکس نے سب کو بتا دیا کہ کیسی کو ریور پسند ہے — کیسی کے تیار ہونے سے پہلے۔ اب سب جانتے ہیں۔ کیسی کو فیصلہ کرنا ہے: بیکس پر غصہ کرے یا حالات قبول کرے؟' },
+      conflict:  { title:'پڑھائی کی ملاقات غلط ہوگئی', desc:'کیسی اور ریور پڑھنے کے لیے ملتے ہیں۔ لیکن ریور کسی اور کو بھی لاتا ہے — پراعتماد، مزاحیہ، اور واضح طور پر ریور میں دلچسپی رکھنے والا۔' },
+      setting:   { title:'اسکول میں ڈانس پارٹی کا اعلان', desc:'اسکول نے ڈانس پارٹی کا اعلان کیا۔ اچانک سب کچھ بدل گیا — آپ کس کے ساتھ جائیں گے؟ آپ کس کے ساتھ جانا چاہتے ہیں؟' },
+      genre:     { title:'ایک راز نے سب بدل دیا', desc:'ریور نے رات کو کیسی کو میسج کیا: "مجھے تم سے کچھ کہنا ہے۔ وعدہ کرو عجیب نہیں کرو گے۔" کہانی اب ایک معمے کی طرح لگنے لگی۔' }
+    },
+    ru: {
+      character: { title:'Бекс создаёт проблему', desc:'Бекс рассказала всем, что Кейси нравится Ривер — до того, как Кейси был готов. Теперь все знают. Кейси должен решить: злиться на Бекс или справляться с тем, что уже случилось?' },
+      conflict:  { title:'Совместная учёба пошла не так', desc:'Кейси и Ривер встречаются позаниматься. Но Ривер приводит ещё кого-то — уверенного, веселого, и явно заинтересованного в Ривер.' },
+      setting:   { title:'В школе объявили танцы', desc:'В школе объявили вечер с танцами. Всё сразу изменилось — с кем ты пойдёшь, с кем хочешь пойти?' },
+      genre:     { title:'Секрет меняет всё', desc:'Ривер пишет Кейси поздно ночью: "Мне нужно тебе кое-что сказать. Обещай не вести себя странно." История начинает ощущаться как тайна.' }
+    }
+  };
+
   const opts = options.length ? options : FALLBACK;
-  let selectedId = null;
+  window._voteOptions = opts;
+  window._selectedVoteId = null;
+
+  const langTrans = VOTE_TRANS[selectedLang] || null;
 
   let html = `
     <div class="vote-screen-title">What happens next?</div>
@@ -1544,21 +1590,32 @@ function renderVoteOptions(container, options) {
     </div>
     <div id="vote-options-list">
   `;
-  opts.forEach((opt,i) => {
+
+  opts.forEach((opt) => {
+    const trans = langTrans ? langTrans[opt.id] : null;
+    const transBtn = trans ? `<button class="vote-trans-btn" onclick="event.stopPropagation();toggleVoteTrans('vtrans-${opt.id}')">🌐 translate</button>` : '';
+    const transDiv = trans ? `<div class="vote-trans-text" id="vtrans-${opt.id}" style="display:none;">
+      <strong>${trans.title}</strong><br>${trans.desc}
+    </div>` : '';
     html += `
       <div class="vote-card" id="vopt-${opt.id}" onclick="selectVoteOption('${opt.id}')">
         <div class="vc-label ${opt.id}">${opt.emoji} ${opt.label}</div>
         <div class="vc-title">${opt.title}</div>
-        <div class="vc-desc">${opt.desc||''}</div>
+        <div class="vc-desc">${opt.desc||''} ${transBtn}</div>
+        ${transDiv}
       </div>`;
   });
+
   html += `</div>
     <button class="vote-submit-btn" id="vote-submit-btn" onclick="submitVote()" disabled>Cast my vote →</button>
   `;
   container.innerHTML = html;
+}
 
-  window._voteOptions = opts;
-  window._selectedVoteId = null;
+function toggleVoteTrans(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 function selectVoteOption(id) {
