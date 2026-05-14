@@ -649,6 +649,7 @@ const THEMES = {
     nextBg: '#6a0f2e', nextColor: '#ffc0d8',
     font: "'Lora', serif", titleFont: "'Satisfy', cursive"
   },
+  hero: {
     panelBg: '#fffbe6', headerBg: '#1a1a1a', headerColor: '#FFD600',
     artBg: '#1a1a1a', captionColor: '#7a5800', bodyColor: '#2a1a00',
     vocabBg: '#fff3c0', vocabChipBg: '#1a1a1a', vocabChipColor: '#FFD600',
@@ -1727,7 +1728,7 @@ function renderVoteOptions(container, options) {
       setting:   { title:'В школе объявили танцы', desc:'В школе объявили вечер с танцами. Всё сразу изменилось — с кем ты пойдёшь, с кем хочешь пойти?' },
       genre:     { title:'Секрет меняет всё', desc:'Ривер пишет Кейси поздно ночью: "Мне нужно тебе кое-что сказать. Обещай не вести себя странно." История начинает ощущаться как тайна.' }
     }
-  };
+  }
 
   const opts = options.length ? options : FALLBACK;
   window._voteOptions = opts;
