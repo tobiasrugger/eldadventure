@@ -42,7 +42,8 @@ body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif
 .g-mystery { background: #1c1a14; color: #d4c87a; border-color: #3d3820; }
 .g-mystery.selected { border-color: #c8b840; box-shadow: 0 0 0 3px rgba(200,184,64,0.2); }
 .g-mystery .g-sub { color: #a89e5a; }
-.g-hero { background: #fff8e1; color: #7a3800; border-color: #ffd166; }
+.g-crush2 { background: #fce4ec; color: #6a0f2e; border-color: #e8a0b8; }
+.g-crush2.selected { border-color: #c0305a; box-shadow: 0 0 0 3px rgba(192,48,90,0.15); }
 .g-hero.selected { border-color: #ff9900; box-shadow: 0 0 0 3px rgba(255,153,0,0.2); }
 
 .start-btn {
@@ -288,6 +289,11 @@ body { background: #f0ede6; min-height: 100vh; font-family: 'Nunito', sans-serif
       <span class="g-icon">💌</span>
       <div class="g-title">Crush &amp; friendship</div>
       <div class="g-sub">Notes, dances, and big feelings</div>
+    </div>
+    <div class="genre-card g-crush2" onclick="selectGenre('crush_part2', this)">
+      <span class="g-icon">💔</span>
+      <div class="g-title">Crush — Part 2</div>
+      <div class="g-sub">Bex told everyone. Now what?</div>
     </div>
     <div class="genre-card g-mystery" onclick="selectGenre('mystery', this)">
       <span class="g-icon">🔍</span>
@@ -632,7 +638,17 @@ const THEMES = {
     nextBg: '#3d3820', nextColor: '#d4c87a',
     font: "'Playfair Display', serif", titleFont: "'Playfair Display', serif"
   },
-  hero: {
+  crush_part2: {
+    panelBg: '#fce4ec', headerBg: '#6a0f2e', headerColor: '#ffc0d8',
+    artBg: '#e8a0b8', captionColor: '#6a0f2e', bodyColor: '#3a0418',
+    vocabBg: '#f8d0e0', vocabChipBg: '#c0305a', vocabChipColor: '#fff',
+    vocabDefBg: '#f4c0d4', wordColor: '#a02050',
+    choicesBg: '#e8a0b8', choicesColor: '#3a0418', btnBg: '#6a0f2e', btnColor: '#ffc0d8', btnHover: '#8b1a4a',
+    quizBg: '#fce4ec', quizBorder: '#c0305a', quizColor: '#3a0418',
+    correctBg: '#c8efc8', correctColor: '#1a5a1a', wrongBg: '#fce8e8', wrongColor: '#8b1a1a',
+    nextBg: '#6a0f2e', nextColor: '#ffc0d8',
+    font: "'Lora', serif", titleFont: "'Satisfy', cursive"
+  },
     panelBg: '#fffbe6', headerBg: '#1a1a1a', headerColor: '#FFD600',
     artBg: '#1a1a1a', captionColor: '#7a5800', bodyColor: '#2a1a00',
     vocabBg: '#fff3c0', vocabChipBg: '#1a1a1a', vocabChipColor: '#FFD600',
@@ -1229,6 +1245,144 @@ hero: {
     { q: "What does 'concentrate' mean?", opts: ["To run very fast", "To make a loud noise", "To think very hard about one thing", "To fly through the air"], ans: 2 }
   ]
 }
+,crush_part2: {
+  label: "Crush & Friendship — Part 2",
+  start: "intro",
+  scenes: {
+    intro: {
+      art: "😳📱", caption: "The next morning",
+      sentences: [
+        "I wake up. I look at my phone.",
+        "There are fifteen messages in the group chat.",
+        "Everyone is talking about me and River.",
+        "Bex told them.",
+        "My face gets hot. I feel embarrassed and angry."
+      ],
+      vocab: { embarrassed: { en: "feeling uncomfortable because people are watching or talking about you", es: "avergonzado — incómodo porque la gente habla de ti", ar: "محرج — يشعر بعدم الارتياح لأن الناس يتحدثون عنه", zh: "尴尬 — 因为别人议论你而感到不舒服", vi: "xấu hổ — cảm thấy khó chịu vì mọi người đang nói về bạn", ur: "شرمندہ — بے چینی محسوس کرنا کیونکہ لوگ آپ کے بارے میں بات کر رہے ہیں", ru: "смущённый — чувствовать дискомфорт, потому что о тебе говорят" } },
+      choices: [
+        { text: "Text Bex right now: \"Why did you tell everyone?\"", next: "confront_bex" },
+        { text: "Don't text anyone. Go to school and find River first.", next: "find_river_first" }
+      ]
+    },
+
+    confront_bex: {
+      art: "😤💬", caption: "The hallway — before class",
+      sentences: [
+        "I find Bex at her locker.",
+        "\"Why did you tell everyone?\" I ask.",
+        "My voice is shaking.",
+        "Bex looks at the floor. \"I'm sorry. I thought it would help.\"",
+        "\"Help?\" I say. \"How is this helping?\""
+      ],
+      vocab: { betray: { en: "to hurt someone who trusted you", es: "traicionar — lastimar a alguien que confiaba en ti", ar: "يخون — يؤذي شخصاً وثق به", zh: "背叛 — 伤害信任你的人", vi: "phản bội — làm tổn thương người tin tưởng bạn", ur: "دھوکہ دینا — اس شخص کو تکلیف دینا جو آپ پر بھروسہ کرتا تھا", ru: "предать — причинить боль тому, кто тебе доверял" } },
+      choices: [
+        { text: "Walk away — you need to find River", next: "river_hallway" },
+        { text: "Keep talking. You need Bex to understand.", next: "bex_explains" }
+      ]
+    },
+
+    find_river_first: {
+      art: "🚶💭", caption: "Walking to school",
+      sentences: [
+        "I walk slowly.",
+        "I keep thinking: what does River think of me now?",
+        "Does River think I told Bex to say something?",
+        "Does River think I wanted everyone to know?",
+        "I feel sick with worry."
+      ],
+      vocab: { worry: { en: "to think about bad things that might happen", es: "preocuparse — pensar en cosas malas", ar: "يقلق — يفكر في أشياء سيئة قد تحدث", zh: "担心 — 思考可能发生的坏事", vi: "lo lắng — nghĩ về những điều xấu", ur: "فکر کرنا — بری باتوں کے بارے میں سوچنا", ru: "беспокоиться — думать о плохих вещах" } },
+      choices: [
+        { text: "Find River near the classroom", next: "river_hallway" },
+        { text: "Stop and text River first: \"I didn't ask Bex to do this.\"", next: "river_hallway" }
+      ]
+    },
+
+    bex_explains: {
+      art: "😢🗣️", caption: "Still at the lockers",
+      sentences: [
+        "Bex's eyes get red.",
+        "\"I thought River liked you back,\" she says.",
+        "\"I thought if everyone knew, River would have to say something.\"",
+        "\"That's not how it works,\" I say.",
+        "Bex nods. \"I know. I'm really sorry, Casey.\""
+      ],
+      vocab: { apologize: { en: "to say you are sorry for something you did", es: "disculparse — decir que lo sientes por algo que hiciste", ar: "يعتذر — يقول إنه آسف على شيء فعله", zh: "道歉 — 为你做的事说对不起", vi: "xin lỗi — nói rằng bạn tiếc về điều bạn đã làm", ur: "معافی مانگنا — کہنا کہ آپ کو افسوس ہے", ru: "извиниться — сказать, что сожалеешь о содеянном" } },
+      choices: [
+        { text: "\"Okay. But I have to go find River now.\"", next: "river_hallway" }
+      ]
+    },
+
+    river_hallway: {
+      art: "💗😬", caption: "Outside history class",
+      sentences: [
+        "I see River standing outside our history classroom.",
+        "River sees me.",
+        "For one second, neither of us moves.",
+        "Then River says: \"I heard what happened with Bex.\"",
+        "\"I'm sorry,\" I say quickly. \"I didn't ask her to tell anyone.\""
+      ],
+      vocab: { rumor: { en: "a story that people share, but may not be true", es: "rumor — una historia que la gente comparte, pero puede no ser verdad", ar: "إشاعة — قصة يتداولها الناس وقد لا تكون صحيحة", zh: "谣言 — 人们传播的故事，可能不是真的", vi: "tin đồn — câu chuyện mọi người chia sẻ nhưng có thể không đúng", ur: "افواہ — وہ کہانی جو لوگ شیئر کرتے ہیں لیکن سچ نہ ہو", ru: "слух — история, которую все рассказывают, но она может быть неправдой" } },
+      choices: [
+        { text: "Wait quietly to hear what River says", next: "river_response_wait" },
+        { text: "\"I like you. And I'm not embarrassed about it.\"", next: "river_response_brave" }
+      ]
+    },
+
+    river_response_wait: {
+      art: "🤫❤️", caption: "River speaks",
+      sentences: [
+        "River is quiet for a moment.",
+        "\"I know you didn't,\" River finally says.",
+        "\"Bex texted me too. To explain.\"",
+        "\"She said you were really angry at her.\"",
+        "\"Yeah,\" I say. \"I was.\""
+      ],
+      vocab: { loyal: { en: "always supporting someone you care about", es: "leal — siempre apoyar a alguien que te importa", ar: "مخلص — دائماً يدعم شخصاً يهتم به", zh: "忠诚 — 总是支持你关心的人", vi: "trung thành — luôn ủng hộ người bạn quan tâm", ur: "وفادار — جس کی آپ پرواہ کرتے ہیں اسے ہمیشہ سپورٹ کرنا", ru: "верный — всегда поддерживать того, о ком заботишься" } },
+      choices: [
+        { text: "Walk into class together", next: "ending" }
+      ]
+    },
+
+    river_response_brave: {
+      art: "😮💗", caption: "River's face",
+      sentences: [
+        "River looks surprised.",
+        "Then River smiles — a slow, real smile.",
+        "\"That's... really brave,\" River says.",
+        "\"Or really stupid,\" I say.",
+        "River laughs. \"Maybe both.\""
+      ],
+      vocab: { brave: { en: "not afraid to do something hard", es: "valiente — no tener miedo de hacer algo difícil", ar: "شجاع — غير خائف من فعل شيء صعب", zh: "勇敢 — 不怕做困难的事", vi: "dũng cảm — không sợ làm điều khó", ur: "بہادر — مشکل کام سے نہ ڈرنا", ru: "храбрый — не бояться трудного" } },
+      choices: [
+        { text: "Walk into class together", next: "ending" }
+      ]
+    },
+
+    ending: {
+      art: "🌸📖", caption: "History class",
+      sentences: [
+        "We sit next to each other in history class.",
+        "The teacher talks about cause and effect.",
+        "I think: Bex caused this. And the effect... is not so bad.",
+        "After class, River passes me a note.",
+        "It says: \"Still want to study together?\""
+      ],
+      vocab: { forgive: { en: "to stop being angry at someone who hurt you", es: "perdonar — dejar de estar enojado con alguien que te lastimó", ar: "يسامح — يتوقف عن الغضب على شخص آذاه", zh: "原谅 — 不再对伤害你的人生气", vi: "tha thứ — ngừng tức giận với người đã làm tổn thương bạn", ur: "معاف کرنا — اس شخص پر غصہ چھوڑنا جس نے آپ کو تکلیف دی", ru: "прощать — перестать злиться на того, кто тебя обидел" } },
+      choices: [
+        { text: "✓ Finish — Take the quiz!", finish: true },
+        { text: "Read again from the start", restart: true }
+      ]
+    }
+  },
+  quiz: [
+    { q: "How does Casey find out that Bex told everyone?", opts: ["A teacher says something", "Casey sees it on the group chat", "River calls Casey", "Bex tells Casey directly"], ans: 1 },
+    { q: "Why did Bex tell everyone?", opts: ["She wanted to hurt Casey", "She was bored", "She thought it would help Casey and River", "She was angry at Casey"], ans: 2 },
+    { q: "What does River say to Casey in the hallway?", opts: ["\"I never want to talk to you again\"", "\"I heard what happened with Bex\"", "\"Why did you tell everyone?\"", "\"Meet me after school\""], ans: 1 },
+    { q: "What does River's note at the end say?", opts: ["\"I forgive you\"", "\"Don't talk to me\"", "\"Still want to study together?\"", "\"Meet me at lunch\""], ans: 2 },
+    { q: "What does 'embarrassed' mean?", opts: ["Very happy", "Feeling uncomfortable because people are talking about you", "Very angry", "Very tired"], ans: 1 },
+    { q: "What does 'forgive' mean?", opts: ["To forget everything", "To tell everyone a secret", "To stop being angry at someone who hurt you", "To ask for help"], ans: 2 }
+  ]
+}
 
 }; // end STORIES
 
@@ -1586,7 +1740,7 @@ function renderVoteOptions(container, options) {
     <div class="vote-screen-sub">Choose the direction for Part 2 of the story.</div>
     <div class="vote-email-field">
       <label>Your school email</label>
-      <input type="email" id="vote-email" placeholder="yourname@school.edu">
+      <input type="email" id="vote-email" placeholder="yourname@school.edu" oninput="checkVoteReady()">
     </div>
     <div id="vote-options-list">
   `;
@@ -1623,13 +1777,26 @@ function selectVoteOption(id) {
   document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
   const el = document.getElementById('vopt-' + id);
   if (el) el.classList.add('selected');
-  document.getElementById('vote-submit-btn').disabled = false;
+  checkVoteReady();
+}
+
+function checkVoteReady() {
+  const email = (document.getElementById('vote-email')?.value || '').trim();
+  const chosen = window._selectedVoteId;
+  const btn = document.getElementById('vote-submit-btn');
+  if (btn) btn.disabled = !(email && chosen);
 }
 
 async function submitVote() {
   const optId = window._selectedVoteId;
   if (!optId) return;
   const email = document.getElementById('vote-email').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('vote-email').focus();
+    document.getElementById('vote-email').style.borderColor = '#c04040';
+    return;
+  }
+  document.getElementById('vote-email').style.borderColor = '';
   const opt = (window._voteOptions||[]).find(o=>o.id===optId);
   const btn = document.getElementById('vote-submit-btn');
   btn.disabled = true;
